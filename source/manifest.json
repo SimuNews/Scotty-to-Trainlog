@@ -14,10 +14,11 @@
   "short_name": "Sample Name",
 
   "permissions": [
-    "activeTab",
     "storage",
-    "http://*/*",
-    "https://*/*"
+    "webRequest",
+    "webRequestBlocking",
+    "http://fahrplan.oebb.at/*",
+    "https://fahrplan.oebb.at/*"
   ],
 
   "content_security_policy": "script-src 'self'; object-src 'self'",
@@ -65,8 +66,8 @@
 
   "content_scripts": [{
     "matches": [
-      "http://*/*",
-      "https://*/*"
+      "http://fahrplan.oebb.at/*",
+      "https://fahrplan.oebb.at/*"
     ],
     "js": [
       "js/contentScript.bundle.js"
