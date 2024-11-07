@@ -28,7 +28,7 @@
 	},
 	"settings": {
 		"node": {
-			"tryExtensions": [".tsx"] // append tsx to the list as well
+			"tryExtensions": [".ts"] // append ts to the list as well
 		}
 	}
 }

@@ -9,7 +9,7 @@
 			"esnext"
 		],
 		"declaration": false,
-		"isolatedModules": true,
+		"isolatedModules": false,
 		/* Additional Checks */
 		"useDefineForClassFields": true,
 		"skipLibCheck": true,
