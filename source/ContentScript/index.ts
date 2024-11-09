@@ -1,7 +1,4 @@
 import { browser } from "webextension-polyfill-ts";
-// import { ScottyResponse } from "../Background/oebbScottyResponseTypes";
-
-console.log('helloworld from content script');
 
 browser.runtime.onMessage.addListener(() => {
     addEventListenersToBtns();
@@ -12,8 +9,6 @@ const listenerClass = ".lyr_atomBtn";
 addEventListenersToBtns();
 
 function addEventListenersToBtns() {
-    console.log("[STT] Add listeners");
-    
     let clickableAtomBtns = doc.querySelectorAll(listenerClass);
     clickableAtomBtns.forEach((e) => {
         e.addEventListener("click", appendTrainLogBtn);
@@ -37,8 +32,6 @@ function appendTrainLogBtn() {
 </button>
 */
 function createTrainLogBtn(): HTMLElement {
-    console.log("[STT] Add Btn");
-    
     const btn = doc.createElement("button");
     btn.classList.add("lyr_atomBtn");
     btn.classList.add("lyr_atomActionBtn");
@@ -67,7 +60,15 @@ function createTrainLogBtn(): HTMLElement {
     btn.appendChild(iconSpan);
     btn.appendChild(textSpan);
 
+    btn.addEventListener("click", (e: Event) => onTrainlogBtnClick(e.target as HTMLElement));
+
     return btn;
+}
+
+function onTrainlogBtnClick(btn: HTMLElement) {
+    const tripContainer = btn.closest(".lyr_tpConDetailWrapper");
+    const id = tripContainer?.id as string;
+    console.log("Connection Id: " + id?.replace("HFS_RES_PT_", ""));
 }
 
 
