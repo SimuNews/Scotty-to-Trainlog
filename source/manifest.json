@@ -17,8 +17,7 @@
     "storage",
     "webRequest",
     "webRequestBlocking",
-    "http://fahrplan.oebb.at/*",
-    "https://fahrplan.oebb.at/*"
+    "*://fahrplan.oebb.at/bin/mgate.exe*"
   ],
 
   "content_security_policy": "script-src 'self'; object-src 'self'",
@@ -72,5 +71,9 @@
     "js": [
       "js/contentScript.bundle.js"
     ]
-  }]
+  }],
+
+  "web_accessible_resources": [
+    "assets/icons/logo_trainlog.png"
+  ]
 }
