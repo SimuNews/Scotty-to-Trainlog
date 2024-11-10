@@ -14,11 +14,6 @@ namespace STT {
         newTrip: TrainLogNewTrip;
     }
 
-    export interface Location {
-        lat: number;
-        lng: number;
-    }
-
     export interface TrainLogNewTrip {
         originStation: [Location, string];
         originManualName: string;

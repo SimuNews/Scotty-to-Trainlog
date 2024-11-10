@@ -1,6 +1,8 @@
 import {browser} from 'webextension-polyfill-ts';
 import { ScottyResponse } from './oebbScottyResponseTypes';
 
+// @ts-ignore
+namespace STT {
 
     browser.runtime.onInstalled.addListener((): void => {
         console.log('🦄', 'extension installed');
@@ -55,3 +57,4 @@ import { ScottyResponse } from './oebbScottyResponseTypes';
             return browser.tabs.sendMessage.apply(globalThis, args as any);
         });
     }
+}
