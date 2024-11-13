@@ -1,7 +1,4 @@
-import "jquery";
-
-// @ts-ignore
-namespace STT {
+import * as $ from "jquery";
     
 	const baseUrl = "https://trainlog.me";
     const currentUser = "SimuOlds"
@@ -34,7 +31,14 @@ namespace STT {
 		private ajax(method: "GET" | "POST" | "PUT", data: any): JQueryXHR {
 			const ajaxSettings = {
 				url: this.url,
+				contentType: "application/x-www-form-urlencoded",
 				method: method,
+				dataType: "jsonp",
+				crossDomain: true,
+				headers: {
+					"Access-Control-Allow-Credentials": "true",
+					"Access-Control-Allow-Origin": "https://trainlog.me"
+				},
 				data: data,
 				cache: false
              } as JQueryAjaxSettings;
@@ -42,4 +46,3 @@ namespace STT {
 			return $.ajax(ajaxSettings);
 		}
 	}
-}

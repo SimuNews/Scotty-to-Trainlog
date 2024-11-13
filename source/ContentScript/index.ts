@@ -69,6 +69,7 @@ function onTrainlogBtnClick(btn: HTMLElement) {
     const tripContainer = btn.closest(".lyr_tpConDetailWrapper");
     const id = tripContainer?.id as string;
     console.log("Connection Id: " + id?.replace("HFS_RES_PT_", ""));
+    browser.runtime.sendMessage({conId: id?.replace("HFS_RES_PT_", "")});
 }
 
 

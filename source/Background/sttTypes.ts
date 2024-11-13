@@ -1,4 +1,4 @@
-namespace STT {
+
 
     export interface Location {
         lat: number;
@@ -7,23 +7,24 @@ namespace STT {
 
     export interface Journey {
         legs: Leg[];
-        price: number;
-        currency: string;
+        depDateTime: Date;
+        arrDateTime: Date;
     }
 
     export interface Leg {
         stations: TrainStation[];
         operator: string;
         lineName: string;
+        price: number;
+        currency: string;
+        notes: string;
     }
 
     export interface TrainStation {
         name: string;
         location: Location;
-        depDateTime: Date;
-        arrDateTime: Date;
+        depDateTime?: Date;
+        arrDateTime?: Date;
         depDelay?: number;
         arrDelay?: number;
     }
-
-}

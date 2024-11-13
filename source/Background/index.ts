@@ -1,8 +1,9 @@
 import {browser} from 'webextension-polyfill-ts';
-import { ScottyResponse } from './oebbScottyResponseTypes';
-
-// @ts-ignore
-namespace STT {
+import * as scotty from "./oebbScottyResponseTypes";
+import * as converter from "./scottyToJourneyConverter";
+import * as tl from "./trainlogTypes";
+import { api } from './trainlogAPI';
+import { Location } from "./sttTypes"
 
     browser.runtime.onInstalled.addListener((): void => {
         console.log('🦄', 'extension installed');
@@ -23,11 +24,9 @@ namespace STT {
             const buffer = await blob.arrayBuffer();
             let str = decoder.decode(buffer);
             console.log(str);
-            const response: ScottyResponse = JSON.parse(str);
+            const response: scotty.ScottyResponse = JSON.parse(str);
             if (response?.svcResL[0]?.meth === "TripSearch") {
-                browser?.storage?.local?.set({
-                    "lastTripSearch": str
-                });
+                localStorage.setItem("lastTripSearch", str);
                 sendMessageToCurrentTab("stt.scotty.saved");
             }
             filter.write(encoder.encode(str));
@@ -40,6 +39,36 @@ namespace STT {
         { urls: ["*://fahrplan.oebb.at/bin/mgate.exe*"], types: ["xmlhttprequest"] },
         ["blocking"],
     );
+
+    browser.runtime.onMessage.addListener((message) => {
+        if (message.conId) {
+            const str = localStorage.getItem("lastTripSearch") as string;
+            const jny = new converter.ScottyToJourneyConverter().convert(Number(message.conId), JSON.parse(str) as scotty.ScottyResponse);
+            console.log(jny);
+
+            api("saveTrip")
+            .post({
+                jsonPath: JSON.stringify(jny.legs[0].stations.map(s => s.location) as Location[]),
+                newTrip: JSON.stringify({
+                    originStation: [jny.legs[0].stations[0].location, jny.legs[0].stations[0].name],
+                    destinationStation: [jny.legs[0].stations[jny.legs[0].stations.length - 1].location, jny.legs[0].stations[jny.legs[0].stations.length - 1].name],
+                    operator: jny.legs[0].operator,
+                    lineName: jny.legs[0].lineName,
+                    notes: jny.legs[0].notes,
+                    precision: "preciseDates",
+                    newTripStartDate: jny.depDateTime.toJSON().substring(0, 10),
+                    newTripStartTime: jny.depDateTime.toTimeString().substring(0, 8),
+                    newTripStart: jny.depDateTime.toJSON().substring(0, 16),
+                    newTripEndDate: jny.arrDateTime.toJSON().substring(0, 10),
+                    newTripEndTime: jny.arrDateTime.toTimeString().substring(0, 8),
+                    newTripEnd: jny.arrDateTime.toJSON().substring(0, 16),
+                    type: tl.TrainlogTripType.TRAIN
+                } as tl.TrainLogNewTrip)
+            })
+            .done(() => console.log("Uploaded to TL"))
+            .fail(() => console.log("Upload failed"));
+        }
+    });
 
     /*                  Promises based version (browser.*)
     * Send a message to the current tab. Arguments are the same as browser.tabs.sendMessage(),
@@ -57,4 +86,3 @@ namespace STT {
             return browser.tabs.sendMessage.apply(globalThis, args as any);
         });
     }
-}

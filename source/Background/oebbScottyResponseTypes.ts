@@ -1,4 +1,4 @@
- namespace STT {
+
     
     export type ScottySearchMethods = "TripSearch" | "HimSearch";
     
@@ -533,4 +533,3 @@
         id: string;
         index: number;
     }
-}

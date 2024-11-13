@@ -20,7 +20,7 @@
     "*://fahrplan.oebb.at/bin/mgate.exe*"
   ],
 
-  "content_security_policy": "script-src 'self'; object-src 'self'",
+  "content_security_policy": "script-src 'self' https://trainlog.me; object-src 'self'",
 
   "__chrome|firefox__author": "SimuNews",
   "__opera__developer": {
