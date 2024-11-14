@@ -50,19 +50,39 @@ import { Location } from "./sttTypes"
             .post({
                 jsonPath: JSON.stringify(jny.legs[0].stations.map(s => s.location) as Location[]),
                 newTrip: JSON.stringify({
-                    originStation: [jny.legs[0].stations[0].location, jny.legs[0].stations[0].name],
-                    destinationStation: [jny.legs[0].stations[jny.legs[0].stations.length - 1].location, jny.legs[0].stations[jny.legs[0].stations.length - 1].name],
+                    originStation: [locationToArray(jny.legs[0].stations[0].location), jny.legs[0].stations[0].name],
+                    destinationStation: [locationToArray(jny.legs[0].stations[jny.legs[0].stations.length - 1].location), jny.legs[0].stations[jny.legs[0].stations.length - 1].name],
                     operator: jny.legs[0].operator,
                     lineName: jny.legs[0].lineName,
                     notes: jny.legs[0].notes,
                     precision: "preciseDates",
                     newTripStartDate: jny.depDateTime.toJSON().substring(0, 10),
-                    newTripStartTime: jny.depDateTime.toTimeString().substring(0, 8),
+                    newTripStartTime: jny.depDateTime.toTimeString().substring(0, 6),
                     newTripStart: jny.depDateTime.toJSON().substring(0, 16),
                     newTripEndDate: jny.arrDateTime.toJSON().substring(0, 10),
-                    newTripEndTime: jny.arrDateTime.toTimeString().substring(0, 8),
+                    newTripEndTime: jny.arrDateTime.toTimeString().substring(0, 6),
                     newTripEnd: jny.arrDateTime.toJSON().substring(0, 16),
-                    type: tl.TrainlogTripType.TRAIN
+                    type: tl.TrainlogTripType.TRAIN,
+                    price: "",
+                    purchasing_date: jny.depDateTime.toJSON().substring(0, 10),
+                    currency: "EUR",
+                    destinationManualLat: "",
+                    destinationManualLng: "",
+                    destinationManualName: "",
+                    estimated_trip_duration: 0,
+                    manDurationHours: "0",
+                    manDurationMinutes: "0",
+                    material_type: "",
+                    onlyDate: "",
+                    onlyDateDuration: "",
+                    originManualLat: "",
+                    originManualLng: "",
+                    originManualName: "",
+                    reg: "",
+                    seat: "",
+                    ticket_id: "",
+                    trip_length: 0,
+                    waypoints: JSON.stringify(jny.legs[0].stations.map(s => s.location) as Location[])
                 } as tl.TrainLogNewTrip)
             })
             .done(() => console.log("Uploaded to TL"))
@@ -85,4 +105,8 @@ import { Location } from "./sttTypes"
             args.unshift(tabs[0].id); //Add tab ID to be the new first argument.
             return browser.tabs.sendMessage.apply(globalThis, args as any);
         });
+    }
+
+    function locationToArray(loc: Location): number[] {
+        return [loc.lat, loc.lng];
     }

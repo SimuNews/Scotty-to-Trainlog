@@ -33,7 +33,7 @@ import * as $ from "jquery";
 				url: this.url,
 				contentType: "application/x-www-form-urlencoded",
 				method: method,
-				dataType: "jsonp",
+				// dataType: "jsonp",
 				crossDomain: true,
 				headers: {
 					"Access-Control-Allow-Credentials": "true",
