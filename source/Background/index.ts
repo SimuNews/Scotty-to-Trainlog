@@ -4,6 +4,7 @@ import * as converter from "./scottyToJourneyConverter";
 import * as tl from "./trainlogTypes";
 import { api } from './trainlogAPI';
 import { Location } from "./sttTypes"
+import didyoumean, { ReturnTypeEnums } from "didyoumean2"
 
     browser.runtime.onInstalled.addListener((): void => {
         console.log('🦄', 'extension installed');
@@ -40,11 +41,23 @@ import { Location } from "./sttTypes"
         ["blocking"],
     );
 
-    browser.runtime.onMessage.addListener((message) => {
+    browser.runtime.onMessage.addListener(async (message) => {
         if (message.conId) {
             const str = localStorage.getItem("lastTripSearch") as string;
             const jny = new converter.ScottyToJourneyConverter().convert(Number(message.conId), JSON.parse(str) as scotty.ScottyResponse);
             console.log(jny);
+
+            let realOperators: string[] = [];
+
+            await api("getManAndOps/" + tl.TrainlogTripType.TRAIN)
+                    .get()
+                    .done((result: {operators: object}) => {
+                        realOperators.push(...Object.keys(result.operators));
+                    });
+            
+                const realOperatorName = didyoumean(jny.legs[0].operator === "Nahreisezug" ? "ÖBB" : jny.legs[0].operator, realOperators, {
+                    returnType: ReturnTypeEnums.ALL_SORTED_MATCHES
+                });
 
             api("saveTrip")
             .post({
@@ -52,7 +65,7 @@ import { Location } from "./sttTypes"
                 newTrip: JSON.stringify({
                     originStation: [locationToArray(jny.legs[0].stations[0].location), jny.legs[0].stations[0].name],
                     destinationStation: [locationToArray(jny.legs[0].stations[jny.legs[0].stations.length - 1].location), jny.legs[0].stations[jny.legs[0].stations.length - 1].name],
-                    operator: jny.legs[0].operator,
+                    operator: realOperatorName[0],
                     lineName: jny.legs[0].lineName,
                     notes: jny.legs[0].notes,
                     precision: "preciseDates",

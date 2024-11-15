@@ -21,12 +21,14 @@ import * as stt from "./sttTypes";
             this.locations = result?.common?.locL;
             this.lineNames = result?.common?.prodL;
             this.operators = result?.common?.opL;
+
+
             
             const con = this.connections[conId];
             return {
                 legs: this.connectionToLegs(con),
-                depDateTime: this.formatDate(con.date, con.dep.dTimeS),
-                arrDateTime: this.formatDate(con.date, con.arr.aTimeS)
+                depDateTime: this.formatDate(con.date, con.dep.dTimeR ?? con.dep.dTimeS, con.dep.dTZOffset),
+                arrDateTime: this.formatDate(con.date, con.arr.aTimeR ?? con.arr.aTimeS, con.arr.aTZOffset)
             } as stt.Journey;
         }
 
@@ -39,7 +41,7 @@ import * as stt from "./sttTypes";
                     const operatorIdx = this.lineNames[lineNameIdx].oprX;
                     legs.push({
                         stations: this.locationsToStations(sec.jny),
-                        operator: operatorIdx ? this.operators[operatorIdx].name : "",
+                        operator: operatorIdx !== undefined ? this.operators[operatorIdx].name : "",
                         lineName: this.lineNames[lineNameIdx].name,
                         price: 0,
                         currency: "",
@@ -59,8 +61,8 @@ import * as stt from "./sttTypes";
                 stations.push({
                     name: loc.name,
                     location: this.crdToLocation(loc.crd),
-                    arrDateTime: this.formatDate(jny.date, stop.aTimeS),
-                    depDateTime: this.formatDate(jny.date, stop.dTimeS)
+                    arrDateTime: this.formatDate(jny.date, stop.aTimeR ?? stop.aTimeS, stop.aTZOffset),
+                    depDateTime: this.formatDate(jny.date, stop.dTimeR ?? stop.dTimeS, stop.aTZOffset)
                 });
             }
 
@@ -74,7 +76,7 @@ import * as stt from "./sttTypes";
             }
         }
 
-        private formatDate(date: string, time?: string): Date | undefined {
+        private formatDate(date: string, time?: string, offset?: number): Date | undefined {
             if (!time) {
                 return undefined;
             }
@@ -85,12 +87,13 @@ import * as stt from "./sttTypes";
             const dateStr = date.substring(0, 4) + "-" + date.substring(4, 6) + "-" + date.substring(6);
             const timeStr = onlyTime.substring(0, 2) + ":" + onlyTime.substring(2, 4) + ":" + onlyTime.substring(4);
 
-            return this.addDays(new Date(Date.parse(dateStr + "T" + timeStr)), plusDays);
+            return this.addDays(new Date(Date.parse(dateStr + "T" + timeStr)), plusDays, offset ?? 0);
         }
 
-        addDays(date: Date, days: number): Date {
+        addDays(date: Date, days: number, offset: number): Date {
             var date = new Date(date.valueOf());
             date.setDate(date.getDate() + days);
+            date.setTime(date.getTime() - date.getTimezoneOffset()*offset*1000)
             return date;
         }
 
