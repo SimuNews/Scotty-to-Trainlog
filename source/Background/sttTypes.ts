@@ -1,3 +1,4 @@
+import { TrainlogTripType } from "./trainlogTypes";
 
 
     export interface Location {
@@ -18,6 +19,7 @@
         price: number;
         currency: string;
         notes: string;
+        type: TrainlogTripType;
     }
 
     export interface TrainStation {

@@ -1,7 +1,13 @@
 import { browser } from "webextension-polyfill-ts";
 
-browser.runtime.onMessage.addListener(() => {
-    addEventListenersToBtns();
+browser.runtime.onMessage.addListener((e: {msg: string, type: string, name: string}) => {
+    if (e?.msg === "stt.scotty.saved") {
+        addEventListenersToBtns();
+    } else if (e?.msg === "stt.scotty.upload.success") {
+        alert("Upload for " + e?.type + " " + e?.name + "to Trainlog successful");
+    } else if (e?.msg === "stt.scotty.upload.failed") {
+        alert("Upload for " + e?.type + " " + e?.name + "to Trainlog failed");
+    }
 });
 
 const doc = window.document;

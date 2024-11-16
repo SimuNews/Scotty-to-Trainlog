@@ -4,7 +4,7 @@ import * as converter from "./scottyToJourneyConverter";
 import * as tl from "./trainlogTypes";
 import { api } from './trainlogAPI';
 import { Location } from "./sttTypes"
-import didyoumean, { ReturnTypeEnums } from "didyoumean2"
+import Fuse from 'fuse.js'
 
     browser.runtime.onInstalled.addListener((): void => {
         console.log('🦄', 'extension installed');
@@ -47,59 +47,73 @@ import didyoumean, { ReturnTypeEnums } from "didyoumean2"
             const jny = new converter.ScottyToJourneyConverter().convert(Number(message.conId), JSON.parse(str) as scotty.ScottyResponse);
             console.log(jny);
 
-            let realOperators: string[] = [];
+            for (let i = 0; i < jny.legs.length; i++) {
 
-            await api("getManAndOps/" + tl.TrainlogTripType.TRAIN)
+                let realOperators: string[] = [];
+                let operator: string = "";
+                if (jny.legs[i].operator?.startsWith("WESTBahn")) {
+                    operator = "Westbahn";
+                } else if (jny.legs[i].operator.startsWith("Nah")) {
+                    operator = "ÖBB";
+                } else {
+                    operator = jny.legs[i].operator;
+                }
+
+                await api(localStorage.getItem("username") + "/getManAndOps/" + tl.TrainlogTripType.TRAIN)
                     .get()
                     .done((result: {operators: object}) => {
                         realOperators.push(...Object.keys(result.operators));
                     });
-            
-                const realOperatorName = didyoumean(jny.legs[0].operator === "Nahreisezug" ? "ÖBB" : jny.legs[0].operator, realOperators, {
-                    returnType: ReturnTypeEnums.ALL_SORTED_MATCHES
+                
+                const fuse = new Fuse(realOperators, {
+                    ignoreLocation: true
                 });
+                const realOperatorName = fuse.search(operator);
 
-            api("saveTrip")
-            .post({
-                jsonPath: JSON.stringify(jny.legs[0].stations.map(s => s.location) as Location[]),
-                newTrip: JSON.stringify({
-                    originStation: [locationToArray(jny.legs[0].stations[0].location), jny.legs[0].stations[0].name],
-                    destinationStation: [locationToArray(jny.legs[0].stations[jny.legs[0].stations.length - 1].location), jny.legs[0].stations[jny.legs[0].stations.length - 1].name],
-                    operator: realOperatorName[0],
-                    lineName: jny.legs[0].lineName,
-                    notes: jny.legs[0].notes,
-                    precision: "preciseDates",
-                    newTripStartDate: jny.depDateTime.toJSON().substring(0, 10),
-                    newTripStartTime: jny.depDateTime.toTimeString().substring(0, 6),
-                    newTripStart: jny.depDateTime.toJSON().substring(0, 16),
-                    newTripEndDate: jny.arrDateTime.toJSON().substring(0, 10),
-                    newTripEndTime: jny.arrDateTime.toTimeString().substring(0, 6),
-                    newTripEnd: jny.arrDateTime.toJSON().substring(0, 16),
-                    type: tl.TrainlogTripType.TRAIN,
-                    price: "",
-                    purchasing_date: jny.depDateTime.toJSON().substring(0, 10),
-                    currency: "EUR",
-                    destinationManualLat: "",
-                    destinationManualLng: "",
-                    destinationManualName: "",
-                    estimated_trip_duration: 0,
-                    manDurationHours: "0",
-                    manDurationMinutes: "0",
-                    material_type: "",
-                    onlyDate: "",
-                    onlyDateDuration: "",
-                    originManualLat: "",
-                    originManualLng: "",
-                    originManualName: "",
-                    reg: "",
-                    seat: "",
-                    ticket_id: "",
-                    trip_length: 0,
-                    waypoints: JSON.stringify(jny.legs[0].stations.map(s => s.location) as Location[])
-                } as tl.TrainLogNewTrip)
-            })
-            .done(() => console.log("Uploaded to TL"))
-            .fail(() => console.log("Upload failed"));
+                
+
+                api(localStorage.getItem("username") + "/saveTrip")
+                .post({
+                    jsonPath: JSON.stringify(jny.legs[i].stations.map(s => s.location) as Location[]),
+                    newTrip: JSON.stringify({
+                        originStation: [locationToArray(jny.legs[i].stations[0].location), jny.legs[i].stations[0].name],
+                        destinationStation: [locationToArray(jny.legs[i].stations[jny.legs[i].stations.length - 1].location), jny.legs[i].stations[jny.legs[i].stations.length - 1].name],
+                        operator: realOperatorName[0].item,
+                        lineName: jny.legs[i].lineName,
+                        notes: jny.legs[i].notes,
+                        precision: "preciseDates",
+                        newTripStartDate: jny.legs[i].stations[0].depDateTime?.toJSON().substring(0, 10),
+                        newTripStartTime: jny.legs[i].stations[0].depDateTime?.toTimeString().substring(0, 6),
+                        newTripStart: jny.legs[i].stations[0].depDateTime?.toJSON().substring(0, 16),
+                        newTripEndDate: jny.legs[i].stations[jny.legs[i].stations.length - 1].arrDateTime?.toJSON().substring(0, 10),
+                        newTripEndTime: jny.legs[i].stations[jny.legs[i].stations.length - 1].arrDateTime?.toTimeString().substring(0, 6),
+                        newTripEnd: jny.legs[i].stations[jny.legs[i].stations.length - 1].arrDateTime?.toJSON().substring(0, 16),
+                        type: jny.legs[i].type,
+                        price: "",
+                        purchasing_date: jny.depDateTime.toJSON().substring(0, 10),
+                        currency: "EUR",
+                        destinationManualLat: "",
+                        destinationManualLng: "",
+                        destinationManualName: "",
+                        estimated_trip_duration: 0,
+                        manDurationHours: "0",
+                        manDurationMinutes: "0",
+                        material_type: "",
+                        onlyDate: "",
+                        onlyDateDuration: "",
+                        originManualLat: "",
+                        originManualLng: "",
+                        originManualName: "",
+                        reg: "",
+                        seat: "",
+                        ticket_id: "",
+                        trip_length: 0,
+                        waypoints: JSON.stringify(jny.legs[i].stations.filter((_, idx) => idx !== 0 && idx !== jny.legs[i].stations.length - 1).map(s => s.location) as Location[])
+                    } as tl.TrainLogNewTrip)
+                })
+                .done(() => sendMessageToCurrentTab("stt.scotty.upload.success", tl.TrainlogTripType.TRAIN, jny.legs[i].lineName))
+                .fail(() => sendMessageToCurrentTab("stt.scotty.upload.failed", tl.TrainlogTripType.TRAIN, jny.legs[i].lineName));
+            }
         }
     });
 
@@ -112,8 +126,8 @@ import didyoumean, { ReturnTypeEnums } from "didyoumean2"
     *     options (optional object) same as tabs.sendMessage():'frameId' prop is the frame ID.
     * )
     */
-    function sendMessageToCurrentTab(msg: string) {
-        var args: any[] = Array.of(msg); //Get arguments as an array
+    function sendMessageToCurrentTab(msg: string, type?: string, name?: string) {
+        var args: any[] = Array.of({msg: msg, type: type, name: name}); //Get arguments as an array
         return browser.tabs.query({active:true,currentWindow:true}).then((tabs) => {
             args.unshift(tabs[0].id); //Add tab ID to be the new first argument.
             return browser.tabs.sendMessage.apply(globalThis, args as any);

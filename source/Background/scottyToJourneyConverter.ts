@@ -1,5 +1,6 @@
 import * as scotty from "./oebbScottyResponseTypes";
 import * as stt from "./sttTypes";
+import { TrainlogTripType } from "./trainlogTypes";
 
     export class ScottyToJourneyConverter {
         
@@ -45,7 +46,8 @@ import * as stt from "./sttTypes";
                         lineName: this.lineNames[lineNameIdx].name,
                         price: 0,
                         currency: "",
-                        notes: "Added via STT"
+                        notes: "",
+                        type: sec.jny.dirFlg === "H" ? TrainlogTripType.BUS : TrainlogTripType.TRAIN   // TRAIN has flag "x"
                     });
                 }
             })
@@ -61,8 +63,8 @@ import * as stt from "./sttTypes";
                 stations.push({
                     name: loc.name,
                     location: this.crdToLocation(loc.crd),
-                    arrDateTime: this.formatDate(jny.date, stop.aTimeR ?? stop.aTimeS, stop.aTZOffset),
-                    depDateTime: this.formatDate(jny.date, stop.dTimeR ?? stop.dTimeS, stop.aTZOffset)
+                    depDateTime: this.formatDate(jny.date, stop.dTimeR ?? stop.dTimeS, stop.dTZOffset),
+                    arrDateTime: this.formatDate(jny.date, stop.aTimeR ?? stop.aTimeS, stop.aTZOffset)
                 });
             }
 

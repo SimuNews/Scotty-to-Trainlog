@@ -1,10 +1,9 @@
 import * as $ from "jquery";
     
 	const baseUrl = "https://trainlog.me";
-    const currentUser = "SimuOlds"
 
 	export function api(url: string, background: boolean = false): ApiUrl {
-		return new ApiUrl(baseUrl + "/" + currentUser + "/" + url, background);
+		return new ApiUrl(baseUrl + "/" + url, background);
 	}
 
 	export class ApiUrl {
