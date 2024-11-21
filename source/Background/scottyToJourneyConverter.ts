@@ -63,6 +63,7 @@ import { TrainlogTripType } from "./trainlogTypes";
                 stations.push({
                     name: loc.name,
                     location: this.crdToLocation(loc.crd),
+                    platform: this.stopToPlatform(stop),
                     depDateTime: this.formatDate(jny.date, stop.dTimeR ?? stop.dTimeS, stop.dTZOffset),
                     arrDateTime: this.formatDate(jny.date, stop.aTimeR ?? stop.aTimeS, stop.aTZOffset)
                 });
@@ -76,6 +77,12 @@ import { TrainlogTripType } from "./trainlogTypes";
                 lat: crd.y / 1000000,
                 lng: crd.x / 1000000
             }
+        }
+
+        private stopToPlatform(stop: scotty.StopL): string {
+            const departurePlatform = stop.dPltfR ? stop.dPltfR.txt.replace(/[^0-9]/g, "") : stop.dPltfS?.txt.replace(/[^0-9]/g, "");
+            const arrivalPlatform = stop.aPltfR ? stop.aPltfR.txt.replace(/[^0-9]/g, "") : stop.aPltfS?.txt.replace(/[^0-9]/g, "");
+            return departurePlatform ? departurePlatform : arrivalPlatform ? arrivalPlatform : "";
         }
 
         private formatDate(date: string, time?: string, offset?: number): Date | undefined {

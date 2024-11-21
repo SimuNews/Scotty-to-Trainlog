@@ -25,6 +25,7 @@ import { TrainlogTripType } from "./trainlogTypes";
     export interface TrainStation {
         name: string;
         location: Location;
+        platform: string;
         depDateTime?: Date;
         arrDateTime?: Date;
         depDelay?: number;

@@ -5,6 +5,7 @@ import * as tl from "./trainlogTypes";
 import { api } from './trainlogAPI';
 import { Location } from "./sttTypes"
 import Fuse from 'fuse.js'
+import { Overpass } from "./overpassAPI"
 
     browser.runtime.onInstalled.addListener((): void => {
         console.log('🦄', 'extension installed');
@@ -76,8 +77,8 @@ import Fuse from 'fuse.js'
                 .post({
                     jsonPath: JSON.stringify(jny.legs[i].stations.map(s => s.location) as Location[]),
                     newTrip: JSON.stringify({
-                        originStation: [locationToArray(jny.legs[i].stations[0].location), jny.legs[i].stations[0].name],
-                        destinationStation: [locationToArray(jny.legs[i].stations[jny.legs[i].stations.length - 1].location), jny.legs[i].stations[jny.legs[i].stations.length - 1].name],
+                        originStation: [locationToArray(await getBestPossibleLocation(jny.legs[i].stations[0].location, jny.legs[i].stations[0].platform)), jny.legs[i].stations[0].name],
+                        destinationStation: [locationToArray(await getBestPossibleLocation(jny.legs[i].stations[jny.legs[i].stations.length - 1].location, jny.legs[i].stations[jny.legs[i].stations.length - 1].platform)), jny.legs[i].stations[jny.legs[i].stations.length - 1].name],
                         operator: realOperatorName[0].item,
                         lineName: jny.legs[i].lineName,
                         notes: jny.legs[i].notes,
@@ -108,7 +109,7 @@ import Fuse from 'fuse.js'
                         seat: "",
                         ticket_id: "",
                         trip_length: 0,
-                        waypoints: JSON.stringify(jny.legs[i].stations.filter((_, idx) => idx !== 0 && idx !== jny.legs[i].stations.length - 1).map(s => s.location) as Location[])
+                        waypoints: JSON.stringify(jny.legs[i].stations.filter((_, idx) => idx !== 0 && idx !== jny.legs[i].stations.length - 1).map(async (s) => await getBestPossibleLocation(s.location, s.platform)))
                     } as tl.TrainLogNewTrip)
                 })
                 .done(() => sendMessageToCurrentTab("stt.scotty.upload.success", tl.TrainlogTripType.TRAIN, jny.legs[i].lineName))
@@ -132,6 +133,13 @@ import Fuse from 'fuse.js'
             args.unshift(tabs[0].id); //Add tab ID to be the new first argument.
             return browser.tabs.sendMessage.apply(globalThis, args as any);
         });
+    }
+
+    async function getBestPossibleLocation(loc: Location, platform: string) {
+        if (!platform) {
+            return loc;
+        }
+        return await Overpass.findNearestMatchingPlatform(loc, platform);
     }
 
     function locationToArray(loc: Location): number[] {
