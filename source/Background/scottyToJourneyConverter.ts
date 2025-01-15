@@ -43,7 +43,7 @@ import { TrainlogTripType } from "./trainlogTypes";
                     legs.push({
                         stations: this.locationsToStations(sec.jny),
                         operator: operatorIdx !== undefined ? this.operators[operatorIdx].name : "",
-                        lineName: this.lineNames[lineNameIdx].name,
+                        lineName: this.lineNames[lineNameIdx].nameS || this.lineNames[lineNameIdx].name,
                         price: 0,
                         currency: "",
                         notes: "",

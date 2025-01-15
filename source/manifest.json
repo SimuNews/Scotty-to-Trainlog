@@ -18,10 +18,11 @@
     "webRequest",
     "webRequestBlocking",
     "*://fahrplan.oebb.at/bin/mgate.exe*",
-    "*://trainlog.me/*"
+    "*://trainlog.me/*",
+    "*://127.0.0.1:5000/*"
   ],
 
-  "content_security_policy": "script-src 'self' https://trainlog.me; object-src 'self'",
+  "content_security_policy": "script-src 'self' https://trainlog.me http://127.0.0.1:5000; object-src 'self'",
 
   "__chrome|firefox__author": "SimuNews",
   "__opera__developer": {

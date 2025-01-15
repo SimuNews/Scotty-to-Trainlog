@@ -19,22 +19,43 @@ export namespace Overpass {
             out;
         `;
 
-        const deferred = $.Deferred();
+        const deferred = $.Deferred<Location>();
         new ApiUrl(baseUrl).post(
             {"data": overpassQuery}
         )
         .then((json: o.Overpass.OverpassResponse) => {
-            
+            console.log(json);
+			
             const way = json.elements.filter(e => e.type === "way")?.at(0);
             const nodes = json.elements.filter(e => e.type === "node");
 
+			const p1: Location = {
+				lat: nodes.filter(n => n.id === way?.nodes?.at(0)).map(n => n.lat).at(0) as number,
+				lng: nodes.filter(n => n.id === way?.nodes?.at(0)).map(n => n.lon).at(0) as number
+			}
+
+			const p2: Location = {
+				lat: nodes.filter(n => n.id === way?.nodes?.at(1)).map(n => n.lat).at(0) as number,
+				lng: nodes.filter(n => n.id === way?.nodes?.at(1)).map(n => n.lon).at(0) as number
+			}
+
+			console.log("Resolve platform: " + platform);
             deferred.resolve({
-                lat: nodes.filter(n => n.id === way?.nodes?.at(0)).map(n => n.lat) ?? location.lat,
-                lng: nodes.filter(n => n.id === way?.nodes?.at(0)).map(n => n.lon) ?? location.lng
+                lat: midpoint(p1, p2).lat || location.lat,
+                lng: midpoint(p1, p2).lng || location.lng
             });
         })
-        .fail(() => deferred.resolve(null));
-        return deferred;
+        .fail(() => deferred.resolve({
+			lat: location.lat, lng: location.lng
+		}));
+        return deferred.promise();
+	}
+
+	function midpoint(p1: Location, p2: Location): Location {
+    	return {
+			lat: (p1.lat + p2.lat) / 2,
+			lng: (p1.lng + p2.lng) / 2
+		};
 	}
 
 	export class ApiUrl {
