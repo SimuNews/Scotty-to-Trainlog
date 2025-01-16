@@ -75,7 +75,7 @@ import { Overpass } from "./overpassAPI"
 
                 console.log(tripToSave);
 
-                api(localStorage.getItem("username") + "/saveTrip")
+                api(localStorage.getItem("username") + "/scottySaveTrip")
                 .post(tripToSave)
                 .done(() => sendMessageToCurrentTab("stt.scotty.upload.success", tl.TrainlogTripType.TRAIN, jny.legs[i].lineName))
                 .fail(() => sendMessageToCurrentTab("stt.scotty.upload.failed", tl.TrainlogTripType.TRAIN, jny.legs[i].lineName));
