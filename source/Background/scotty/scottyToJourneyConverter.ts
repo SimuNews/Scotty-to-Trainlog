@@ -1,13 +1,14 @@
-import * as scotty from "./oebbScottyResponseTypes";
-import * as stt from "./sttTypes";
-import { TrainlogTripType } from "./trainlogTypes";
+import * as stt from "../sttTypes";
+import { TrainlogTripType } from "../trainlog/trainlogTypes";
+import * as SCOTTY from "./oebbScottyResponseTypes";
+
 
     export class ScottyToJourneyConverter {
         
-        private connections: scotty.OutConL[];
-        private locations: scotty.LocL[];
-        private lineNames: scotty.ProdL[];
-        private operators: scotty.OpL[];
+        private connections: SCOTTY.OutConL[];
+        private locations: SCOTTY.LocL[];
+        private lineNames: SCOTTY.ProdL[];
+        private operators: SCOTTY.OpL[];
 
         /**
          *
@@ -15,15 +16,13 @@ import { TrainlogTripType } from "./trainlogTypes";
         public constructor() {
         }
 
-        public convert(conId: number, scottyResponse: scotty.ScottyResponse): stt.Journey {
+        public convert(conId: number, scottyResponse: SCOTTY.ScottyResponse): stt.Journey {
             
             const result = scottyResponse.svcResL[0]?.res;
             this.connections = result?.outConL;
             this.locations = result?.common?.locL;
             this.lineNames = result?.common?.prodL;
             this.operators = result?.common?.opL;
-
-
             
             const con = this.connections[conId];
             return {
@@ -33,21 +32,23 @@ import { TrainlogTripType } from "./trainlogTypes";
             } as stt.Journey;
         }
 
-        private connectionToLegs(connection: scotty.OutConL): stt.Leg[] {
+        private connectionToLegs(connection: SCOTTY.OutConL): stt.Leg[] {
             const legs: stt.Leg[] = [];
             
             connection.secL.forEach(sec => {
                 if (sec.type === "JNY") {
                     const lineNameIdx = sec.jny.prodX;
                     const operatorIdx = this.lineNames[lineNameIdx].oprX;
+                    const operatorName = operatorIdx !== undefined ? this.operators[operatorIdx].name : "";
+                    const lineName = this.lineNames[lineNameIdx].nameS || this.lineNames[lineNameIdx].name;
                     legs.push({
                         stations: this.locationsToStations(sec.jny),
-                        operator: operatorIdx !== undefined ? this.operators[operatorIdx].name : "",
-                        lineName: this.lineNames[lineNameIdx].nameS || this.lineNames[lineNameIdx].name,
+                        operator: operatorName,
+                        lineName: lineName,
                         price: 0,
                         currency: "",
                         notes: "",
-                        type: sec.jny.dirFlg === "H" ? TrainlogTripType.BUS : TrainlogTripType.TRAIN   // TRAIN has flag "x"
+                        type: lineName.startsWith("Bus") || lineName.startsWith("ICB") ? TrainlogTripType.BUS : lineName.startsWith("Schiff") ? TrainlogTripType.FERRY : TrainlogTripType.TRAIN
                     });
                 }
             })
@@ -55,7 +56,7 @@ import { TrainlogTripType } from "./trainlogTypes";
             return legs;
         }
 
-        private locationsToStations(jny: scotty.Jny): stt.TrainStation[] {
+        private locationsToStations(jny: SCOTTY.Jny): stt.TrainStation[] {
             const stations: stt.TrainStation[] = [];
 
             for (const stop of jny.stopL) {
@@ -72,14 +73,14 @@ import { TrainlogTripType } from "./trainlogTypes";
             return stations;
         }
 
-        private crdToLocation(crd: scotty.Crd): stt.Location {
+        private crdToLocation(crd: SCOTTY.Crd): stt.Location {
             return {
                 lat: crd.y / 1000000,
                 lng: crd.x / 1000000
             }
         }
 
-        private stopToPlatform(stop: scotty.StopL): string {
+        private stopToPlatform(stop: SCOTTY.StopL): string {
             const departurePlatform = stop.dPltfR ? stop.dPltfR.txt.replace(/[^0-9]/g, "") : stop.dPltfS?.txt.replace(/[^0-9]/g, "");
             const arrivalPlatform = stop.aPltfR ? stop.aPltfR.txt.replace(/[^0-9]/g, "") : stop.aPltfS?.txt.replace(/[^0-9]/g, "");
             return departurePlatform ? departurePlatform : arrivalPlatform ? arrivalPlatform : "";

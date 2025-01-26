@@ -1,12 +1,15 @@
 import { browser } from "webextension-polyfill-ts";
+import { openDialog } from "./scotty/scotty";
 
-browser.runtime.onMessage.addListener((e: {msg: string, type: string, name: string}) => {
+browser.runtime.onMessage.addListener((e: {msg: string, args: any[]}) => {
     if (e?.msg === "stt.scotty.saved") {
         addEventListenersToBtns();
-    } else if (e?.msg === "stt.scotty.upload.success") {
-        alert("Upload for " + e?.type + " " + e?.name + " to Trainlog successful");
-    } else if (e?.msg === "stt.scotty.upload.failed") {
-        alert("Upload for " + e?.type + " " + e?.name + " to Trainlog failed");
+    } else if (e?.msg === "stt.scotty.upload.end") {
+        resetButton();
+        openDialog("Upload successfull", `Trip from ${e.args[0]} to ${e.args[1]} has been uploaded to Trainlog.`);
+    } else if (e?.msg === "stt.scotty.no-username") {
+        resetButton();
+        openDialog("No Username", "Please enter your Trainlog username in the extension options.");
     }
 });
 
@@ -66,9 +69,20 @@ function createTrainLogBtn(): HTMLElement {
     btn.appendChild(iconSpan);
     btn.appendChild(textSpan);
 
-    btn.addEventListener("click", (e: Event) => onTrainlogBtnClick(e.target as HTMLElement));
+    btn.addEventListener("click", (e: Event) => {
+        onTrainlogBtnClick(e.target as HTMLElement);
+        btn.classList.add("tlu-loading-indicator");
+        textSpan.innerText = "Uploading...";
+    });
 
     return btn;
+}
+
+function resetButton() {
+    doc.querySelectorAll(".tlu-loading-indicator").forEach(e => {
+        e?.classList.remove("tlu-loading-indicator");
+        (e.querySelector(".lyr_atomText") as HTMLElement).innerText = "To Trainlog";
+    });
 }
 
 function onTrainlogBtnClick(btn: HTMLElement) {
@@ -77,6 +91,5 @@ function onTrainlogBtnClick(btn: HTMLElement) {
     console.log("Connection Id: " + id?.replace("HFS_RES_PT_", ""));
     browser.runtime.sendMessage({conId: id?.replace("HFS_RES_PT_", "")});
 }
-
 
 export {};

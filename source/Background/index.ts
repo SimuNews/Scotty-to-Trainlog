@@ -1,10 +1,11 @@
 import {browser} from 'webextension-polyfill-ts';
-import * as scotty from "./oebbScottyResponseTypes";
-import * as converter from "./scottyToJourneyConverter";
-import * as tl from "./trainlogTypes";
-import { api } from './trainlogAPI';
+import * as tl from "./trainlog/trainlogTypes";
+import { TRAINLOG } from './api/trainlogAPI';
+import { ScottyResponse } from './scotty/oebbScottyResponseTypes';
 import { Journey, Location } from "./sttTypes"
-import { Overpass } from "./overpassAPI"
+import { ScottyToJourneyConverter } from './scotty/scottyToJourneyConverter';
+import { Overpass } from "./api//overpassAPI"
+import Fuse, { FuseResult } from 'fuse.js';
 
     browser.runtime.onInstalled.addListener((): void => {
         console.log('🦄', 'extension installed');
@@ -25,7 +26,7 @@ import { Overpass } from "./overpassAPI"
             const buffer = await blob.arrayBuffer();
             let str = decoder.decode(buffer);
             console.log(str);
-            const response: scotty.ScottyResponse = JSON.parse(str);
+            const response: ScottyResponse = JSON.parse(str);
             if (response?.svcResL[0]?.meth === "TripSearch") {
                 localStorage.setItem("lastTripSearch", str);
                 sendMessageToCurrentTab("stt.scotty.saved");
@@ -43,10 +44,17 @@ import { Overpass } from "./overpassAPI"
 
     browser.runtime.onMessage.addListener(async (message) => {
         if (message.conId) {
+
+            if (!localStorage.getItem("username")) {
+                sendMessageToCurrentTab("stt.scotty.no-username");
+                return;
+            }
+
             const str = localStorage.getItem("lastTripSearch") as string;
-            const jny = new converter.ScottyToJourneyConverter().convert(Number(message.conId), JSON.parse(str) as scotty.ScottyResponse);
+            const jny = new ScottyToJourneyConverter().convert(Number(message.conId), JSON.parse(str) as ScottyResponse);
             console.log(jny);
 
+            const promises = [];
             for (let i = 0; i < jny.legs.length; i++) {
 
                 // let realOperators: string[] = [];
@@ -61,25 +69,38 @@ import { Overpass } from "./overpassAPI"
                     operator = jny.legs[i].operator;
                 }
 
-                const tripToSave = await buildTrip(jny, i, operator);
-                // await api(localStorage.getItem("username") + "/getManAndOps/" + tl.TrainlogTripType.TRAIN)
-                //     .get()
-                //     .done((result: {operators: object}) => {
-                //         realOperators.push(...Object.keys(result.operators));
-                //     });
+                let realOperators: string[] = [];
+                await TRAINLOG.api(localStorage.getItem("username") + "/getManAndOps/" + jny.legs[i].type)
+                .get()
+                .done((result: {operators: object}) => {
+                    realOperators.push(...Object.keys(result.operators));
+                });
                 
-                // const fuse = new Fuse(realOperators, {
-                //     ignoreLocation: true
-                // });
-                // const realOperatorName = fuse.search(operator);
-
+                const fuse = new Fuse(realOperators, {
+                    ignoreLocation: true,
+                    threshold: 0.4,
+                    ignoreFieldNorm: true,
+                    isCaseSensitive: false
+                });
+                const realOperatorName: FuseResult<string>[] = fuse.search(operator);
+                
+                const tripToSave = await buildTrip(jny, i, realOperatorName.at(0)?.item ?? "");
                 console.log(tripToSave);
 
-                api(localStorage.getItem("username") + "/scottySaveTrip")
-                .post(tripToSave)
-                .done(() => sendMessageToCurrentTab("stt.scotty.upload.success", tl.TrainlogTripType.TRAIN, jny.legs[i].lineName))
-                .fail(() => sendMessageToCurrentTab("stt.scotty.upload.failed", tl.TrainlogTripType.TRAIN, jny.legs[i].lineName));
+                promises.push(
+                    TRAINLOG.api(localStorage.getItem("username") + "/scottySaveTrip")
+                    .post(tripToSave)
+                );
             }
+
+            Promise.allSettled(promises).then((results) => {
+                console.log(results);
+                sendMessageToCurrentTab(
+                    "stt.scotty.upload.end",
+                    jny.legs[0].stations[0].name,
+                    jny.legs[jny.legs.length - 1].stations[jny.legs[jny.legs.length - 1].stations.length - 1].name
+                );
+            });
         }
     });
 
@@ -92,8 +113,8 @@ import { Overpass } from "./overpassAPI"
     *     options (optional object) same as tabs.sendMessage():'frameId' prop is the frame ID.
     * )
     */
-    function sendMessageToCurrentTab(msg: string, type?: string, name?: string) {
-        var args: any[] = Array.of({msg: msg, type: type, name: name}); //Get arguments as an array
+    function sendMessageToCurrentTab(msg: string, ...messageArgs: any[]) {
+        var args: any[] = Array.of({msg: msg, args: messageArgs}); //Get arguments as an array
         return browser.tabs.query({active:true,currentWindow:true}).then((tabs) => {
             args.unshift(tabs[0].id); //Add tab ID to be the new first argument.
             return browser.tabs.sendMessage.apply(globalThis, args as any);
@@ -116,6 +137,7 @@ import { Overpass } from "./overpassAPI"
         const waypoints: Location[] = [];
         for (let index = 1; index < jny.legs[i].stations.length - 2; index++) {
             const s = jny.legs[i].stations[index];
+            console.log("Station: " + s.name);
             waypoints.push(await getBestPossibleLocation(s.location, s.platform))
         }
         

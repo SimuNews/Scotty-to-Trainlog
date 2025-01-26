@@ -1,4 +1,4 @@
-import { TrainlogTripType } from "./trainlogTypes";
+import { TrainlogTripType } from "./trainlog/trainlogTypes";
 
 
     export interface Location {

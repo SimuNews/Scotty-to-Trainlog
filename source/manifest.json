@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
-  "name": "Scotty to Trainlog",
-  "version": "0.0.0",
+  "name": "Trainlog Utilities",
+  "version": "0.0.1",
 
   "icons": {
     "16": "assets/icons/favicon-16.png",
@@ -11,18 +11,18 @@
   },
   "description": "A extension that allows to import full trips with one click",
   "homepage_url": "https://trainlog.me/",
-  "short_name": "STT",
+  "short_name": "TLU",
 
   "permissions": [
     "storage",
     "webRequest",
     "webRequestBlocking",
     "*://fahrplan.oebb.at/bin/mgate.exe*",
-    "*://trainlog.me/*",
+    "*://*.trainlog.me/*",
     "*://127.0.0.1:5000/*"
   ],
 
-  "content_security_policy": "script-src 'self' https://trainlog.me http://127.0.0.1:5000; object-src 'self'",
+  "content_security_policy": "script-src 'self' https://*.trainlog.me http://127.0.0.1:5000; object-src 'self'",
 
   "__chrome|firefox__author": "SimuNews",
   "__opera__developer": {
@@ -31,7 +31,7 @@
 
   "__firefox__applications": {
     "gecko": {
-      "id": "{754FB1AD-CC3B-4856-B6A0-7786F8CA9D17}"
+      "id": "{ca5a2cac-0058-4e56-a09f-6a79f0d85187}"
     }
   },
 
@@ -46,7 +46,7 @@
       "48": "assets/icons/favicon-48.png",
       "128": "assets/icons/favicon-128.png"
     },
-    "default_title": "STT",
+    "default_title": "TLU",
     "__chrome|opera__chrome_style": false,
     "__firefox__browser_style": false
   },
@@ -72,6 +72,9 @@
     ],
     "js": [
       "js/contentScript.bundle.js"
+    ],
+    "css": [
+      "css/contentScript.css"
     ]
   }],
 

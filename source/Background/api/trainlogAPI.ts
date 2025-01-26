@@ -1,4 +1,6 @@
 import * as $ from "jquery";
+
+export namespace TRAINLOG {
     
 	const baseUrl = "https://trainlog.me";
 
@@ -45,3 +47,4 @@ import * as $ from "jquery";
 			return $.ajax(ajaxSettings);
 		}
 	}
+}

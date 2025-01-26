@@ -1,4 +1,4 @@
-import { Location } from "./sttTypes"
+import { Location } from "../sttTypes"
 
 
     export enum TrainlogTripType {

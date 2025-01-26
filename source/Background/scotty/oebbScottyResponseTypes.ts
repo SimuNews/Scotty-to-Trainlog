@@ -1,5 +1,4 @@
 
-    
     export type ScottySearchMethods = "TripSearch" | "HimSearch";
     
     export interface ScottyResponse {

@@ -1,5 +1,5 @@
 import * as $ from "jquery";
-import { Location } from "./sttTypes";
+import { Location } from "../sttTypes";
 import * as o from "./overpass"
 
 export namespace Overpass {
