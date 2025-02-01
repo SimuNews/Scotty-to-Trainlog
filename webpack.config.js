@@ -9,7 +9,7 @@ const ExtensionReloader = require('webpack-ext-reloader');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const WextManifestWebpackPlugin = require('wext-manifest-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
-const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 
 const viewsPath = path.join(__dirname, 'views');
 const sourcePath = path.join(__dirname, 'source');
@@ -96,6 +96,20 @@ module.exports = {
         test: /\.(js|ts)x?$/,
         loader: 'babel-loader',
         exclude: /node_modules/,
+        options: {
+          presets: [
+            '@babel/preset-env',
+            ['@babel/preset-typescript', {
+              allowNamespaces: true
+            }],
+            '@babel/preset-react'
+          ],
+          plugins: [
+            '@babel/plugin-transform-runtime',
+            '@babel/plugin-proposal-class-properties',
+            '@babel/plugin-proposal-object-rest-spread'
+          ]
+        }
       },
       {
         test: /\.(sa|sc|c)ss$/,
@@ -187,11 +201,7 @@ module.exports = {
         },
         extractComments: false,
       }),
-      new OptimizeCSSAssetsPlugin({
-        cssProcessorPluginOptions: {
-          preset: ['default', {discardComments: {removeAll: true}}],
-        },
-      }),
+      new CssMinimizerPlugin(),
       new FilemanagerPlugin({
         events: {
           onEnd: {

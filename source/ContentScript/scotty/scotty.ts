@@ -1,9 +1,9 @@
 import "../../styles/scotty.scss";
 
-
     export function openDialog(title: string, message: string) {
+        const randId = Math.random();
         const dialogHtml = `
-            <div class="hfs_overlayWin hfs_overlayHimEmergency" id="HFS_Overlay_TRAINLOG_UTILITIES" style="border: 1px black solid;">
+            <div class="hfs_overlayWin hfs_overlayHimEmergency" id="HFS_Overlay_${randId}" style="border: 1px black solid;">
                 <div class="hfs_overlayHeader">
                     <button type="button" class="lyr_atomBtn hfs_overlayClose lyr_tooltip" data-close-dialog>
                         <span class="lyr_atomIcon lyr_tooltip">
@@ -33,11 +33,11 @@ import "../../styles/scotty.scss";
         const dialogContainer = document.createElement('div');
         dialogContainer.innerHTML = dialogHtml;
         document.body.appendChild(dialogContainer);
-        dialogContainer.querySelectorAll('[data-close-dialog]').forEach(i => i.addEventListener('click', closeDialog));
+        dialogContainer.querySelectorAll('[data-close-dialog]').forEach(i => i.addEventListener('click', () => closeDialog(randId)));
     }
 
-    function closeDialog() {
-        const dialog = document.getElementById('HFS_Overlay_TRAINLOG_UTILITIES');
+    function closeDialog(id: number): void {
+        const dialog = document.getElementById(`HFS_Overlay_${id}`);
         if (dialog) {
             dialog.parentElement?.removeChild(dialog);
         }

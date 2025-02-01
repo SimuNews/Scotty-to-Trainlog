@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Trainlog Utilities",
-  "version": "0.0.1",
+  "version": "0.1.1",
 
   "icons": {
     "16": "assets/icons/favicon-16.png",
@@ -31,7 +31,7 @@
 
   "__firefox__applications": {
     "gecko": {
-      "id": "{ca5a2cac-0058-4e56-a09f-6a79f0d85187}"
+      "id": "{e73eb3bd-7da8-4dcd-8023-398438fe6431}"
     }
   },
 
