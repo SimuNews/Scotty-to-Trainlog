@@ -1,7 +1,4 @@
-import * as $ from "jquery";
-
-export namespace TRAINLOG {
-    
+	import * as $ from "jquery";
 	const baseUrl = "https://trainlog.me";
 
 	export function api(url: string, background: boolean = false): ApiUrl {
@@ -47,4 +44,3 @@ export namespace TRAINLOG {
 			return $.ajax(ajaxSettings);
 		}
 	}
-}

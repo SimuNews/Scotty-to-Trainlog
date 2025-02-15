@@ -1,110 +1,108 @@
-import * as stt from "../sttTypes";
-import { TrainlogTripType } from "../trainlog/trainlogTypes";
-import * as SCOTTY from "./oebbScottyResponseTypes";
+import { Journey, Leg, TrainlogTripType, TrainStation, Location } from "../trainlog/trainlogTypes";
+import { OutConL, LocL, ProdL, OpL, ScottyResponse, Crd, Jny, StopL } from "./scottyTypes";
 
+export class ScottyToJourneyConverter {
+    
+    private connections: OutConL[];
+    private locations: LocL[];
+    private lineNames: ProdL[];
+    private operators: OpL[];
 
-    export class ScottyToJourneyConverter {
+    /**
+     *
+     */
+    public constructor() {
+    }
+
+    public convert(conId: number, response: ScottyResponse): Journey {
         
-        private connections: SCOTTY.OutConL[];
-        private locations: SCOTTY.LocL[];
-        private lineNames: SCOTTY.ProdL[];
-        private operators: SCOTTY.OpL[];
+        const result = response.svcResL[0]?.res;
+        this.connections = result?.outConL;
+        this.locations = result?.common?.locL;
+        this.lineNames = result?.common?.prodL;
+        this.operators = result?.common?.opL;
+        
+        const con = this.connections[conId];
+        return {
+            legs: this.connectionToLegs(con),
+            depDateTime: this.formatDate(con.date, con.dep.dTimeR ?? con.dep.dTimeS, con.dep.dTZOffset),
+            arrDateTime: this.formatDate(con.date, con.arr.aTimeR ?? con.arr.aTimeS, con.arr.aTZOffset)
+        } as Journey;
+    }
 
-        /**
-         *
-         */
-        public constructor() {
-        }
-
-        public convert(conId: number, scottyResponse: SCOTTY.ScottyResponse): stt.Journey {
-            
-            const result = scottyResponse.svcResL[0]?.res;
-            this.connections = result?.outConL;
-            this.locations = result?.common?.locL;
-            this.lineNames = result?.common?.prodL;
-            this.operators = result?.common?.opL;
-            
-            const con = this.connections[conId];
-            return {
-                legs: this.connectionToLegs(con),
-                depDateTime: this.formatDate(con.date, con.dep.dTimeR ?? con.dep.dTimeS, con.dep.dTZOffset),
-                arrDateTime: this.formatDate(con.date, con.arr.aTimeR ?? con.arr.aTimeS, con.arr.aTZOffset)
-            } as stt.Journey;
-        }
-
-        private connectionToLegs(connection: SCOTTY.OutConL): stt.Leg[] {
-            const legs: stt.Leg[] = [];
-            
-            connection.secL.forEach(sec => {
-                if (sec.type === "JNY") {
-                    const lineNameIdx = sec.jny.prodX;
-                    const operatorIdx = this.lineNames[lineNameIdx].oprX;
-                    const operatorName = operatorIdx !== undefined ? this.operators[operatorIdx].name : "";
-                    const lineName = this.lineNames[lineNameIdx].nameS || this.lineNames[lineNameIdx].name;
-                    legs.push({
-                        stations: this.locationsToStations(sec.jny),
-                        operator: operatorName,
-                        lineName: lineName,
-                        price: 0,
-                        currency: "",
-                        notes: "",
+    private connectionToLegs(connection: OutConL): Leg[] {
+        const legs: Leg[] = [];
+        
+        connection.secL.forEach(sec => {
+            if (sec.type === "JNY") {
+                const lineNameIdx = sec.jny.prodX;
+                const operatorIdx = this.lineNames[lineNameIdx].oprX;
+                const operatorName = operatorIdx !== undefined ? this.operators[operatorIdx].name : "";
+                const lineName = this.lineNames[lineNameIdx].nameS || this.lineNames[lineNameIdx].name;
+                legs.push({
+                    stations: this.locationsToStations(sec.jny),
+                    operator: operatorName,
+                    lineName: lineName,
+                    price: 0,
+                    currency: "",
+                    notes: "",
                         type: lineName.startsWith("Bus") || lineName.startsWith("ICB") ? TrainlogTripType.BUS : lineName.startsWith("Schiff") ? TrainlogTripType.FERRY : TrainlogTripType.TRAIN
-                    });
-                }
-            })
-
-            return legs;
-        }
-
-        private locationsToStations(jny: SCOTTY.Jny): stt.TrainStation[] {
-            const stations: stt.TrainStation[] = [];
-
-            for (const stop of jny.stopL) {
-                const loc = this.locations[stop.locX];
-                stations.push({
-                    name: loc.name,
-                    location: this.crdToLocation(loc.crd),
-                    platform: this.stopToPlatform(stop),
-                    depDateTime: this.formatDate(jny.date, stop.dTimeR ?? stop.dTimeS, stop.dTZOffset),
-                    arrDateTime: this.formatDate(jny.date, stop.aTimeR ?? stop.aTimeS, stop.aTZOffset)
                 });
             }
+        })
 
-            return stations;
-        }
-
-        private crdToLocation(crd: SCOTTY.Crd): stt.Location {
-            return {
-                lat: crd.y / 1000000,
-                lng: crd.x / 1000000
-            }
-        }
-
-        private stopToPlatform(stop: SCOTTY.StopL): string {
-            const departurePlatform = stop.dPltfR ? stop.dPltfR.txt.replace(/[^0-9]/g, "") : stop.dPltfS?.txt.replace(/[^0-9]/g, "");
-            const arrivalPlatform = stop.aPltfR ? stop.aPltfR.txt.replace(/[^0-9]/g, "") : stop.aPltfS?.txt.replace(/[^0-9]/g, "");
-            return departurePlatform ? departurePlatform : arrivalPlatform ? arrivalPlatform : "";
-        }
-
-        private formatDate(date: string, time?: string, offset?: number): Date | undefined {
-            if (!time) {
-                return undefined;
-            }
-
-            const plusDays = Math.floor((Number(time) ?? 0) / 1000000);
-            const onlyTime = String((Number(time) ?? 0) - (1000000 * plusDays)).padStart(6, "0");
-
-            const dateStr = date.substring(0, 4) + "-" + date.substring(4, 6) + "-" + date.substring(6);
-            const timeStr = onlyTime.substring(0, 2) + ":" + onlyTime.substring(2, 4) + ":" + onlyTime.substring(4);
-
-            return this.addDays(new Date(Date.parse(dateStr + "T" + timeStr)), plusDays, offset ?? 0);
-        }
-
-        addDays(date: Date, days: number, offset: number): Date {
-            var date = new Date(date.valueOf());
-            date.setDate(date.getDate() + days);
-            date.setTime(date.getTime() - date.getTimezoneOffset()*offset*1000)
-            return date;
-        }
-
+        return legs;
     }
+
+    private locationsToStations(jny: Jny): TrainStation[] {
+        const stations: TrainStation[] = [];
+
+        for (const stop of jny.stopL) {
+            const loc = this.locations[stop.locX];
+            stations.push({
+                name: loc.name,
+                location: this.crdToLocation(loc.crd),
+                platform: this.stopToPlatform(stop),
+                depDateTime: this.formatDate(jny.date, stop.dTimeR ?? stop.dTimeS, stop.dTZOffset),
+                arrDateTime: this.formatDate(jny.date, stop.aTimeR ?? stop.aTimeS, stop.aTZOffset)
+            });
+        }
+
+        return stations;
+    }
+
+    private crdToLocation(crd: Crd): Location {
+        return {
+            lat: crd.y / 1000000,
+            lng: crd.x / 1000000
+        }
+    }
+
+    private stopToPlatform(stop: StopL): string {
+        const departurePlatform = stop.dPltfR ? stop.dPltfR.txt.replace(/[^0-9]/g, "") : stop.dPltfS?.txt.replace(/[^0-9]/g, "");
+        const arrivalPlatform = stop.aPltfR ? stop.aPltfR.txt.replace(/[^0-9]/g, "") : stop.aPltfS?.txt.replace(/[^0-9]/g, "");
+        return departurePlatform ? departurePlatform : arrivalPlatform ? arrivalPlatform : "";
+    }
+
+    private formatDate(date: string, time?: string, offset?: number): Date | undefined {
+        if (!time) {
+            return undefined;
+        }
+
+        const plusDays = Math.floor((Number(time) ?? 0) / 1000000);
+        const onlyTime = String((Number(time) ?? 0) - (1000000 * plusDays)).padStart(6, "0");
+
+        const dateStr = date.substring(0, 4) + "-" + date.substring(4, 6) + "-" + date.substring(6);
+        const timeStr = onlyTime.substring(0, 2) + ":" + onlyTime.substring(2, 4) + ":" + onlyTime.substring(4);
+
+        return this.addDays(new Date(Date.parse(dateStr + "T" + timeStr)), plusDays, offset ?? 0);
+    }
+
+    addDays(date: Date, days: number, offset: number): Date {
+        var date = new Date(date.valueOf());
+        date.setDate(date.getDate() + days);
+        date.setTime(date.getTime() - date.getTimezoneOffset()*offset*1000)
+        return date;
+    }
+
+}

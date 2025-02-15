@@ -71,6 +71,7 @@
       "*://*.bahn.de/*"
     ],
     "js": [
+      "js/namespaces.bundle.js",
       "js/contentScript.bundle.js"
     ],
     "css": [

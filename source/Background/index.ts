@@ -1,48 +1,28 @@
-import {browser} from 'webextension-polyfill-ts';
-import * as tl from "./trainlog/trainlogTypes";
-import { TRAINLOG } from './api/trainlogAPI';
-import { ScottyResponse } from './scotty/oebbScottyResponseTypes';
-import { Journey, Location } from "./sttTypes"
-import { ScottyToJourneyConverter } from './scotty/scottyToJourneyConverter';
-import { Overpass } from "./api//overpassAPI"
+import { browser } from 'webextension-polyfill-ts';
 import Fuse, { FuseResult } from 'fuse.js';
+import { ScottyBackend } from './scotty/scotty';
+import { ScottyToJourneyConverter } from './scotty/scottyToJourneyConverter';
+import { ScottyResponse } from './scotty/scottyTypes';
+import { DBBackend } from './db/db';
+import { sendMessageToCurrentTab } from './TLU/tabUtils';
+import { api } from './api/trainlogAPI';
+import { DbToJourneyConverter } from './db/dbToJourneyConverter';
+import { DBahnResponse } from './db/dbTypes';
+import { findNearestMatchingPlatform } from './api/overpassAPI';
+import { Journey, TrainLogNewTrip, Location } from './trainlog/trainlogTypes';
+
+const scotty = new ScottyBackend();
+const db = new DBBackend();
 
     browser.runtime.onInstalled.addListener((): void => {
         console.log('🦄', 'extension installed');
     });
 
-    function listener(details: any) {
-        const filter = browser.webRequest.filterResponseData(details.requestId);
-        const decoder = new TextDecoder("utf-8");
-        const encoder = new TextEncoder();
-
-        const data: any[] = [];
-        filter.ondata = (event) => {
-            data.push(event.data);
-        };
-
-        filter.onstop = async () => {
-            const blob = new Blob(data, { type: "text/html" });
-            const buffer = await blob.arrayBuffer();
-            let str = decoder.decode(buffer);
-            console.log(str);
-            const response: ScottyResponse = JSON.parse(str);
-            if (response?.svcResL[0]?.meth === "TripSearch") {
-                localStorage.setItem("lastTripSearch", str);
-                sendMessageToCurrentTab("stt.scotty.saved");
-            }
-            filter.write(encoder.encode(str));
-            filter.close();
-        };
-    }
-
-    browser.webRequest.onBeforeRequest.addListener(
-        listener,
-        { urls: ["*://fahrplan.oebb.at/bin/mgate.exe*"], types: ["xmlhttprequest"] },
-        ["blocking"],
-    );
+    scotty.registerWebRequestListener();
+    db.registerWebRequestListener();
 
     browser.runtime.onMessage.addListener(async (message) => {
+        console.log("Message received: ", message);
         if (message.conId) {
 
             if (!localStorage.getItem("username")) {
@@ -70,7 +50,7 @@ import Fuse, { FuseResult } from 'fuse.js';
                 }
 
                 let realOperators: string[] = [];
-                await TRAINLOG.api(localStorage.getItem("username") + "/getManAndOps/" + jny.legs[i].type)
+                await api(localStorage.getItem("username") + "/getManAndOps/" + jny.legs[i].type)
                 .get()
                 .done((result: {operators: object}) => {
                     realOperators.push(...Object.keys(result.operators));
@@ -88,7 +68,64 @@ import Fuse, { FuseResult } from 'fuse.js';
                 console.log(tripToSave);
 
                 promises.push(
-                    TRAINLOG.api(localStorage.getItem("username") + "/scottySaveTrip")
+                    api(localStorage.getItem("username") + "/scottySaveTrip")
+                    .post(tripToSave)
+                );
+            }
+
+            Promise.allSettled(promises).then((results) => {
+                console.log(results);
+                sendMessageToCurrentTab(
+                    "stt.scotty.upload.end",
+                    jny.legs[0].stations[0].name,
+                    jny.legs[jny.legs.length - 1].stations[jny.legs[jny.legs.length - 1].stations.length - 1].name
+                );
+            });
+        } else if (message.dbConId) {
+            if (!localStorage.getItem("username")) {
+                sendMessageToCurrentTab("stt.scotty.no-username");
+                return;
+            }
+
+            const str = localStorage.getItem("tlu.dbahn.lastTripSearch") as string;
+            const jny = new DbToJourneyConverter().convert(Number(message.dbConId), JSON.parse(str) as DBahnResponse);
+            console.log(jny);
+
+            const promises = [];
+            for (let i = 0; i < jny.legs.length; i++) {
+
+                // let realOperators: string[] = [];
+                let operator: string = "";
+                if (jny.legs[i].operator?.startsWith("WESTBahn")) {
+                    operator = "Westbahn";
+                } else if (jny.legs[i].operator.startsWith("Nah")) {
+                    operator = "ÖBB";
+                } else if (jny.legs[i].operator.includes("Postbus")) {
+                    operator = "Postbus";
+                } else {
+                    operator = jny.legs[i].operator;
+                }
+
+                let realOperators: string[] = [];
+                await api(localStorage.getItem("username") + "/getManAndOps/" + jny.legs[i].type)
+                .get()
+                .done((result: {operators: object}) => {
+                    realOperators.push(...Object.keys(result.operators));
+                });
+                
+                const fuse = new Fuse(realOperators, {
+                    ignoreLocation: true,
+                    threshold: 0.4,
+                    ignoreFieldNorm: true,
+                    isCaseSensitive: false
+                });
+                const realOperatorName: FuseResult<string>[] = fuse.search(operator);
+                
+                const tripToSave = await buildTrip(jny, i, realOperatorName.at(0)?.item ?? "");
+                console.log(tripToSave);
+
+                promises.push(
+                    api(localStorage.getItem("username") + "/scottySaveTrip")
                     .post(tripToSave)
                 );
             }
@@ -104,29 +141,12 @@ import Fuse, { FuseResult } from 'fuse.js';
         }
     });
 
-    /*                  Promises based version (browser.*)
-    * Send a message to the current tab. Arguments are the same as browser.tabs.sendMessage(),
-    *   except no tabId is provided.
-    *
-    * sendMessageToCurrentTab(
-    *     message (any) message to send
-    *     options (optional object) same as tabs.sendMessage():'frameId' prop is the frame ID.
-    * )
-    */
-    function sendMessageToCurrentTab(msg: string, ...messageArgs: any[]) {
-        var args: any[] = Array.of({msg: msg, args: messageArgs}); //Get arguments as an array
-        return browser.tabs.query({active:true,currentWindow:true}).then((tabs) => {
-            args.unshift(tabs[0].id); //Add tab ID to be the new first argument.
-            return browser.tabs.sendMessage.apply(globalThis, args as any);
-        });
-    }
-
     async function getBestPossibleLocation(loc: Location, platform: string) {
         if (!platform) {
             return loc;
         }
         // return loc;
-        return Overpass.findNearestMatchingPlatform(loc, platform);
+        return findNearestMatchingPlatform(loc, platform);
     }
 
     function locationToArray(loc: Location): number[] {
@@ -141,8 +161,8 @@ import Fuse, { FuseResult } from 'fuse.js';
             waypoints.push(await getBestPossibleLocation(s.location, s.platform))
         }
         
-        const originLocation = await getBestPossibleLocation(jny.legs[i].stations[0].location, jny.legs[i].stations[0].platform);
-        const destinationLocation = await getBestPossibleLocation(jny.legs[i].stations[jny.legs[i].stations.length - 1].location, jny.legs[i].stations[jny.legs[i].stations.length - 1].platform);
+        const originLocation = await getBestPossibleLocation(jny.legs[i].stations[0]?.location, jny.legs[i].stations[0]?.platform);
+        const destinationLocation = await getBestPossibleLocation(jny.legs[i].stations[jny.legs[i].stations.length - 1]?.location, jny.legs[i].stations[jny.legs[i].stations.length - 1]?.platform);
 
         return {
             jsonPath: JSON.stringify([originLocation, ...waypoints, destinationLocation]),
@@ -154,11 +174,11 @@ import Fuse, { FuseResult } from 'fuse.js';
                 notes: jny.legs[i].notes,
                 precision: "preciseDates",
                 newTripStartDate: jny.legs[i].stations[0].depDateTime?.toJSON().substring(0, 10),
-                newTripStartTime: jny.legs[i].stations[0].depDateTime?.toTimeString().substring(0, 6),
-                newTripStart: jny.legs[i].stations[0].depDateTime?.toJSON().substring(0, 16),
+                newTripStartTime: jny.legs[i].stations[0].depDateTime?.toTimeString().substring(0, 5),
+                newTripStart: jny.legs[i].stations[0].depDateTime?.toISOString().substring(0, 16),
                 newTripEndDate: jny.legs[i].stations[jny.legs[i].stations.length - 1].arrDateTime?.toJSON().substring(0, 10),
-                newTripEndTime: jny.legs[i].stations[jny.legs[i].stations.length - 1].arrDateTime?.toTimeString().substring(0, 6),
-                newTripEnd: jny.legs[i].stations[jny.legs[i].stations.length - 1].arrDateTime?.toJSON().substring(0, 16),
+                newTripEndTime: jny.legs[i].stations[jny.legs[i].stations.length - 1].arrDateTime?.toTimeString().substring(0, 5),
+                newTripEnd: jny.legs[i].stations[jny.legs[i].stations.length - 1].arrDateTime?.toISOString().substring(0, 16),  // Error: Server must have local datetime
                 type: jny.legs[i].type,
                 price: "",
                 purchasing_date: jny.depDateTime.toJSON().substring(0, 10),
@@ -180,6 +200,6 @@ import Fuse, { FuseResult } from 'fuse.js';
                 ticket_id: "",
                 trip_length: 0,
                 waypoints: await JSON.stringify(waypoints)
-            } as tl.TrainLogNewTrip)
+            } as TrainLogNewTrip)
         }
     }
