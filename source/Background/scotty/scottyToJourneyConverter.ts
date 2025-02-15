@@ -10,12 +10,6 @@ import * as SCOTTY from "./oebbScottyResponseTypes";
         private lineNames: SCOTTY.ProdL[];
         private operators: SCOTTY.OpL[];
 
-        /**
-         *
-         */
-        public constructor() {
-        }
-
         public convert(conId: number, scottyResponse: SCOTTY.ScottyResponse): stt.Journey {
             
             const result = scottyResponse.svcResL[0]?.res;
@@ -48,7 +42,7 @@ import * as SCOTTY from "./oebbScottyResponseTypes";
                         price: 0,
                         currency: "",
                         notes: "",
-                        type: lineName.startsWith("Bus") || lineName.startsWith("ICB") ? TrainlogTripType.BUS : lineName.startsWith("Schiff") ? TrainlogTripType.FERRY : TrainlogTripType.TRAIN
+                        type: lineName.startsWith("Bus") || lineName.startsWith("O-Bus") || lineName.startsWith("ICB") ? TrainlogTripType.BUS : lineName.startsWith("Schiff") ? TrainlogTripType.FERRY : TrainlogTripType.TRAIN
                     });
                 }
             })
