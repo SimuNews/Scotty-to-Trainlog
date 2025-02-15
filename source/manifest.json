@@ -18,11 +18,11 @@
     "webRequest",
     "webRequestBlocking",
     "*://fahrplan.oebb.at/bin/mgate.exe*",
-    "*://*.trainlog.me/*",
-    "*://127.0.0.1:5000/*"
+    "*://*.bahn.de/web/api*",
+    "*://*.trainlog.me/*"
   ],
 
-  "content_security_policy": "script-src 'self' https://*.trainlog.me http://127.0.0.1:5000; object-src 'self'",
+  "content_security_policy": "script-src 'self' https://*.trainlog.me; object-src 'self'",
 
   "__chrome|firefox__author": "SimuNews",
   "__opera__developer": {
@@ -67,8 +67,8 @@
 
   "content_scripts": [{
     "matches": [
-      "http://fahrplan.oebb.at/*",
-      "https://fahrplan.oebb.at/*"
+      "*://fahrplan.oebb.at/*",
+      "*://*.bahn.de/*"
     ],
     "js": [
       "js/contentScript.bundle.js"
@@ -79,6 +79,7 @@
   }],
 
   "web_accessible_resources": [
-    "assets/icons/logo_trainlog.png"
+    "assets/icons/logo_trainlog.png",
+    "assets/icons/dbahn.png"
   ]
 }
