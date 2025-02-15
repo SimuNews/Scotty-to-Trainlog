@@ -1,7 +1,5 @@
-import { DBahnResponse, VerbindungsAbschnitt, Halt, Verbindung } from "./dbTypes";
-
-export class DbToJourneyConverter {
-
+namespace DBAHN {
+    export class DbToJourneyConverter {
         // REGEX FOR STATION NAME, LOCATION "/[O|X|Y]=[\d|A-Z|a-z| ]+/gm"
         public convert(conId: number, response: DBahnResponse): TLU.Journey {
             
@@ -36,7 +34,7 @@ export class DbToJourneyConverter {
         private convertToTrainStation(station: Halt): TLU.TrainStation {
             return {
                 name: station.name,
-                location: convertIdToLocation(station.id),
+                location: this.convertIdToLocation(station.id),
                 platform: station.gleis,
                 arrDateTime: new Date(station.ezAnkunftsZeitpunkt ?? station.ankunftsZeitpunkt ?? ""),
                 depDateTime: new Date(station.ezAbfahrtsZeitpunkt ?? station.abfahrtsZeitpunkt ?? ""),
@@ -52,16 +50,20 @@ export class DbToJourneyConverter {
             return new Date(connection?.verbindungsAbschnitte[lastIndex]?.ezAnkunftsZeitpunkt || connection?.verbindungsAbschnitte[lastIndex]?.ankunftsZeitpunkt);
         }
 
+        private convertIdToLocation(id: string): TLU.Location {
+            const match = id.match(/(X|Y)=\d+/gm);
+            if (!match) {
+                throw new Error("Invalid location id format");
+            }
+            return {
+                lat: Number(match.at(0)?.substring(2)) / 1000000,
+                lng: Number(match.at(1)?.substring(2)) / 1000000
+            };
+        }
     }
+}
 
-
-function convertIdToLocation(id: string): TLU.Location {
-    const match = id.match(/(X|Y)=\d+/gm);
-    if (!match) {
-        throw new Error("Invalid location id format");
-    }
-    return {
-        lat: Number(match.at(0)?.substring(2)) / 1000000,
-        lng: Number(match.at(1)?.substring(2)) / 1000000
-    };
+window.DBAHN = {
+    ...window.DBAHN,
+    ...DBAHN
 }

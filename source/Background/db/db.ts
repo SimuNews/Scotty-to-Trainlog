@@ -1,15 +1,14 @@
-export class DBBackend {
-
-    public registerWebRequestListener() {
+namespace DBAHN {
+    export function registerWebRequestListener() {
         browser.webRequest.onBeforeRequest.addListener(
-            this.webRequestListener,
+            webRequestListener,
             { urls: ["*://*.bahn.de/*/fahrplan*"], types: ["xmlhttprequest"] },
             ["blocking"],
         );
     }
 
 
-    private webRequestListener(details: any) {
+    function webRequestListener(details: any) {
         const filter = browser.webRequest.filterResponseData(details.requestId);
         const decoder = new TextDecoder("utf-8");
         const encoder = new TextEncoder();
@@ -30,4 +29,9 @@ export class DBBackend {
             filter.close();
         };
     }
+}
+
+window.DBAHN = {
+    ...window.DBAHN,
+    ...DBAHN
 }

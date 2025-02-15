@@ -1,19 +1,14 @@
 import { browser } from 'webextension-polyfill-ts';
 import Fuse, { FuseResult } from 'fuse.js';
 import { api } from './api/trainlogAPI';
-import { DbToJourneyConverter } from './db/dbToJourneyConverter';
-import { DBahnResponse } from './db/dbTypes';
 import { findNearestMatchingPlatform } from './api/overpassAPI';
-import { DBBackend } from './db/db';
-
-const db = new DBBackend();
 
     browser.runtime.onInstalled.addListener((): void => {
         console.log('🦄', 'extension installed');
     });
 
     SCOTTY.registerWebRequestListener();
-    db.registerWebRequestListener();
+    DBAHN.registerWebRequestListener();
 
     browser.runtime.onMessage.addListener(async (message: any) => {
         console.log("Message received: ", message);
@@ -82,7 +77,7 @@ const db = new DBBackend();
             }
 
             const str = localStorage.getItem("tlu.dbahn.lastTripSearch") as string;
-            const jny = new DbToJourneyConverter().convert(Number(message.dbConId), JSON.parse(str) as DBahnResponse);
+            const jny = new DBAHN.DbToJourneyConverter().convert(Number(message.dbConId), JSON.parse(str) as DBAHN.DBahnResponse);
             console.log(jny);
 
             const promises = [];
