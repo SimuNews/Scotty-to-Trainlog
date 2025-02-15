@@ -1,6 +1,4 @@
-import { Location } from "../sttTypes"
-
-
+namespace TLU {
     export enum TrainlogTripType {
         TRAIN = "train",
         BUS = "bus",
@@ -10,9 +8,35 @@ import { Location } from "../sttTypes"
         WALK = "walk",
     }
 
-    export interface TrainlogSaveTripRequest {
-        jsonPath: Location[];
-        newTrip: TrainLogNewTrip;
+    export interface Location {
+        lat: number;
+        lng: number;
+    }
+
+    export interface Journey {
+        legs: Leg[];
+        depDateTime: Date;
+        arrDateTime: Date;
+    }
+
+    export interface Leg {
+        stations: TrainStation[];
+        operator: string;
+        lineName: string;
+        price: number;
+        currency: string;
+        notes: string;
+        type: TrainlogTripType;
+    }
+
+    export interface TrainStation {
+        name: string;
+        location: Location;
+        platform: string;
+        depDateTime?: Date;
+        arrDateTime?: Date;
+        depDelay?: number;
+        arrDelay?: number;
     }
 
     export interface TrainLogNewTrip {
@@ -50,3 +74,14 @@ import { Location } from "../sttTypes"
         estimated_trip_duration: number;
         waypoints: string;
     }
+
+    export interface TrainlogSaveTripRequest {
+        jsonPath: Location[];
+        newTrip: TrainLogNewTrip;
+    }
+}
+
+window.TLU = {
+    ...window.TLU,
+    ...TLU
+}

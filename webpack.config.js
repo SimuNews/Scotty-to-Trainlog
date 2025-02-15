@@ -59,6 +59,21 @@ module.exports = {
 
   entry: {
     manifest: path.join(sourcePath, 'manifest.json'),
+    namespaces: {
+      import: [
+        // Core namespace declarations
+        path.join(sourcePath, 'ContentScript/contentScript.ts'),  // TLU namespace
+        // Background implementations
+        path.join(sourcePath, 'Background/scotty/scottyTypes.ts'),
+        path.join(sourcePath, 'Background/scotty/scotty.ts'),
+        path.join(sourcePath, 'Background/db/dbTypes.ts'),
+        path.join(sourcePath, 'Background/db/db.ts'),
+        path.join(sourcePath, 'Background/TLU/tabUtils.ts'),
+        // Content script implementations
+        path.join(sourcePath, 'ContentScript/scotty/scotty.ts'),
+        path.join(sourcePath, 'ContentScript/db/db.ts'),
+      ]
+    },
     background: path.join(sourcePath, 'Background', 'index.ts'),
     contentScript: path.join(sourcePath, 'ContentScript', 'index.ts'),
     popup: path.join(sourcePath, 'Popup', 'index.ts'),
@@ -68,6 +83,7 @@ module.exports = {
   output: {
     path: path.join(destPath, targetBrowser),
     filename: 'js/[name].bundle.js',
+    globalObject: 'window'
   },
 
   resolve: {
@@ -187,6 +203,12 @@ module.exports = {
     }),
     // plugin to enable browser reloading in development mode
     extensionReloaderPlugin,
+    new webpack.BannerPlugin({
+      banner: '(function(window){window.SCOTTY=window.SCOTTY||{};window.DBAHN=window.DBAHN||{};window.TLU=window.TLU||{};})(window);',
+      raw: true,
+      entryOnly: true,
+      include: /namespaces\.bundle\.js$/
+    }),
   ],
 
   optimization: {
@@ -198,6 +220,16 @@ module.exports = {
           format: {
             comments: false,
           },
+          keep_classnames: true,
+          keep_fnames: true,
+          mangle: false,
+          compress: {
+            defaults: false,
+            pure_getters: true,
+            keep_fnames: true,
+            keep_classnames: true,
+            toplevel: false
+          }
         },
         extractComments: false,
       }),

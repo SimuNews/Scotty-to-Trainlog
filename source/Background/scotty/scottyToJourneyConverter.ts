@@ -1,18 +1,14 @@
-import * as stt from "../sttTypes";
-import { TrainlogTripType } from "../trainlog/trainlogTypes";
-import * as SCOTTY from "./oebbScottyResponseTypes";
-
-
+namespace SCOTTY {
     export class ScottyToJourneyConverter {
         
-        private connections: SCOTTY.OutConL[];
-        private locations: SCOTTY.LocL[];
-        private lineNames: SCOTTY.ProdL[];
-        private operators: SCOTTY.OpL[];
+        private connections: OutConL[] = [];
+        private locations: LocL[] = [];
+        private lineNames: ProdL[] = [];
+        private operators: OpL[] = [];
 
-        public convert(conId: number, scottyResponse: SCOTTY.ScottyResponse): stt.Journey {
+        public convert(conId: number, response: ScottyResponse): TLU.Journey {
             
-            const result = scottyResponse.svcResL[0]?.res;
+            const result = response.svcResL[0]?.res;
             this.connections = result?.outConL;
             this.locations = result?.common?.locL;
             this.lineNames = result?.common?.prodL;
@@ -23,11 +19,11 @@ import * as SCOTTY from "./oebbScottyResponseTypes";
                 legs: this.connectionToLegs(con),
                 depDateTime: this.formatDate(con.date, con.dep.dTimeR ?? con.dep.dTimeS, con.dep.dTZOffset),
                 arrDateTime: this.formatDate(con.date, con.arr.aTimeR ?? con.arr.aTimeS, con.arr.aTZOffset)
-            } as stt.Journey;
+            } as TLU.Journey;
         }
 
-        private connectionToLegs(connection: SCOTTY.OutConL): stt.Leg[] {
-            const legs: stt.Leg[] = [];
+        private connectionToLegs(connection: OutConL): TLU.Leg[] {
+            const legs: TLU.Leg[] = [];
             
             connection.secL.forEach(sec => {
                 if (sec.type === "JNY") {
@@ -42,7 +38,7 @@ import * as SCOTTY from "./oebbScottyResponseTypes";
                         price: 0,
                         currency: "",
                         notes: "",
-                        type: lineName.startsWith("Bus") || lineName.startsWith("O-Bus") || lineName.startsWith("ICB") ? TrainlogTripType.BUS : lineName.startsWith("Schiff") ? TrainlogTripType.FERRY : TrainlogTripType.TRAIN
+                            type: lineName.startsWith("Bus") || lineName.startsWith("ICB") ? TLU.TrainlogTripType.BUS : lineName.startsWith("Schiff") ? TLU.TrainlogTripType.FERRY : TLU.TrainlogTripType.TRAIN
                     });
                 }
             })
@@ -50,8 +46,8 @@ import * as SCOTTY from "./oebbScottyResponseTypes";
             return legs;
         }
 
-        private locationsToStations(jny: SCOTTY.Jny): stt.TrainStation[] {
-            const stations: stt.TrainStation[] = [];
+        private locationsToStations(jny: Jny): TLU.TrainStation[] {
+            const stations: TLU.TrainStation[] = [];
 
             for (const stop of jny.stopL) {
                 const loc = this.locations[stop.locX];
@@ -67,14 +63,14 @@ import * as SCOTTY from "./oebbScottyResponseTypes";
             return stations;
         }
 
-        private crdToLocation(crd: SCOTTY.Crd): stt.Location {
+        private crdToLocation(crd: Crd): TLU.Location {
             return {
                 lat: crd.y / 1000000,
                 lng: crd.x / 1000000
             }
         }
 
-        private stopToPlatform(stop: SCOTTY.StopL): string {
+        private stopToPlatform(stop: StopL): string {
             const departurePlatform = stop.dPltfR ? stop.dPltfR.txt.replace(/[^0-9]/g, "") : stop.dPltfS?.txt.replace(/[^0-9]/g, "");
             const arrivalPlatform = stop.aPltfR ? stop.aPltfR.txt.replace(/[^0-9]/g, "") : stop.aPltfS?.txt.replace(/[^0-9]/g, "");
             return departurePlatform ? departurePlatform : arrivalPlatform ? arrivalPlatform : "";
@@ -94,7 +90,7 @@ import * as SCOTTY from "./oebbScottyResponseTypes";
             return this.addDays(new Date(Date.parse(dateStr + "T" + timeStr)), plusDays, offset ?? 0);
         }
 
-        addDays(date: Date, days: number, offset: number): Date {
+        private addDays(date: Date, days: number, offset: number): Date {
             var date = new Date(date.valueOf());
             date.setDate(date.getDate() + days);
             date.setTime(date.getTime() - date.getTimezoneOffset()*offset*1000)
@@ -102,3 +98,9 @@ import * as SCOTTY from "./oebbScottyResponseTypes";
         }
 
     }
+}
+
+window.SCOTTY = {
+    ...window.SCOTTY,
+    ...SCOTTY
+}

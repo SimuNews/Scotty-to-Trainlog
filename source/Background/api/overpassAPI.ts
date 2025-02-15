@@ -1,8 +1,6 @@
+import { OverpassResponse } from "./overpass";
+import { Location } from "../trainlog/trainlogTypes";
 import * as $ from "jquery";
-import { Location } from "../sttTypes";
-import * as o from "./overpass"
-
-export namespace Overpass {
 
 	const baseUrl = "https://overpass.private.coffee/api/interpreter";
 
@@ -23,7 +21,7 @@ export namespace Overpass {
         new ApiUrl(baseUrl).post(
             {"data": overpassQuery}
         )
-        .then((json: o.Overpass.OverpassResponse) => {
+        .then((json: OverpassResponse) => {
             console.log(json);
 			
             const way = json.elements.filter(e => e.type === "way")?.at(0);
@@ -91,4 +89,3 @@ export namespace Overpass {
 			return $.ajax(ajaxSettings);
 		}
     }
-}
