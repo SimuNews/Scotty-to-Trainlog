@@ -10,6 +10,9 @@ namespace DBAHN {
             });
             const legs: TLU.Leg[] = [];
             for (const abschnitt of connection.verbindungsAbschnitte) {
+                if (abschnitt.verkehrsmittel.typ !== VerkehrsmittelTyp.PUBLICTRANSPORT) {
+                    continue;
+                }
                 legs.push(this.convertToLeg(abschnitt));
             }
             return {
@@ -27,7 +30,7 @@ namespace DBAHN {
                 price: 0,
                 currency: "",
                 notes: "",
-                type: TLU.TrainlogTripType.TRAIN
+                type: abschnitt.verkehrsmittel.kategorie === "Bsv" || abschnitt.verkehrsmittel.produktGattung === Produktgattung.BUS ? TLU.TrainlogTripType.BUS : TLU.TrainlogTripType.TRAIN
             } as TLU.Leg;
         }
 
@@ -55,6 +58,8 @@ namespace DBAHN {
             if (!match) {
                 throw new Error("Invalid location id format");
             }
+            console.log(id, match);
+            
             return {
                 lat: Number(match.at(0)?.substring(2)) / 1000000,
                 lng: Number(match.at(1)?.substring(2)) / 1000000

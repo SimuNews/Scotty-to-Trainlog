@@ -152,6 +152,9 @@ import { findNearestMatchingPlatform } from './api/overpassAPI';
         const originLocation = await getBestPossibleLocation(jny.legs[i].stations[0]?.location, jny.legs[i].stations[0]?.platform);
         const destinationLocation = await getBestPossibleLocation(jny.legs[i].stations[jny.legs[i].stations.length - 1]?.location, jny.legs[i].stations[jny.legs[i].stations.length - 1]?.platform);
 
+        console.log(jny.legs[i].stations[0].depDateTime?.toJSON().substring(0, 10), jny.legs[i].stations[0].depDateTime?.toTimeString().substring(0, 5), jny.legs[i].stations[0].depDateTime?.toISOString());
+        
+
         return {
             jsonPath: JSON.stringify([originLocation, ...waypoints, destinationLocation]),
             newTrip: JSON.stringify({

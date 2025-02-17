@@ -1,10 +1,9 @@
 import { OverpassResponse } from "./overpass";
-import { Location } from "../trainlog/trainlogTypes";
 import * as $ from "jquery";
 
 	const baseUrl = "https://overpass.private.coffee/api/interpreter";
 
-	export async function findNearestMatchingPlatform(location: Location, platform: string): Promise<Location> {
+	export async function findNearestMatchingPlatform(location: TLU.Location, platform: string): Promise<TLU.Location> {
         const overpassQuery = `
             [out:json][timeout:25];
             // gather results
@@ -17,7 +16,7 @@ import * as $ from "jquery";
             out;
         `;
 
-        const deferred = $.Deferred<Location>();
+        const deferred = $.Deferred<TLU.Location>();
         new ApiUrl(baseUrl).post(
             {"data": overpassQuery}
         )
@@ -27,12 +26,12 @@ import * as $ from "jquery";
             const way = json.elements.filter(e => e.type === "way")?.at(0);
             const nodes = json.elements.filter(e => e.type === "node");
 
-			const p1: Location = {
+			const p1: TLU.Location = {
 				lat: nodes.filter(n => n.id === way?.nodes?.at(0)).map(n => n.lat).at(0) as number,
 				lng: nodes.filter(n => n.id === way?.nodes?.at(0)).map(n => n.lon).at(0) as number
 			}
 
-			const p2: Location = {
+			const p2: TLU.Location = {
 				lat: nodes.filter(n => n.id === way?.nodes?.at(1)).map(n => n.lat).at(0) as number,
 				lng: nodes.filter(n => n.id === way?.nodes?.at(1)).map(n => n.lon).at(0) as number
 			}
@@ -49,7 +48,7 @@ import * as $ from "jquery";
         return deferred.promise();
 	}
 
-	function midpoint(p1: Location, p2: Location): Location {
+	function midpoint(p1: TLU.Location, p2: TLU.Location): TLU.Location {
     	return {
 			lat: (p1.lat + p2.lat) / 2,
 			lng: (p1.lng + p2.lng) / 2

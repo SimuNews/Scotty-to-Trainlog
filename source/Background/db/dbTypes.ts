@@ -1,4 +1,21 @@
 namespace DBAHN {
+
+    export enum Produktgattung {
+        ICE = "ICE",
+        EC_IC = "EC_IC",
+        IR = "IR",
+        REGIONAL = "REGIONAL",
+        SBAHN = "SBAHN",
+        UBAHN = "UBAHN",
+        TRAM = "TRAM",
+        BUS = "BUS"
+    }
+
+    export enum VerkehrsmittelTyp {
+        WALK = "WALK",
+        PUBLICTRANSPORT = "PUBLICTRANSPORT"
+    }
+
     export interface DBahnResponse {
         verbindungen: Verbindung[];
         verbindungReference: VerbindungReference;
@@ -107,11 +124,11 @@ namespace DBAHN {
     }
 
     export interface Verkehrsmittel {
-        produktGattung?: string;
-        kategorie?: string;
+        produktGattung?: Produktgattung;
+        kategorie?: string | "Bsv"; // Bsv = Rail replacement bus
         name: string;
         nummer?: string;
-        typ: string;
+        typ: VerkehrsmittelTyp;
         zugattribute: Zugattribute[];
         kurzText?: string;
         mittelText?: string;
