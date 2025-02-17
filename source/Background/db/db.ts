@@ -7,7 +7,6 @@ namespace DBAHN {
         );
     }
 
-
     function webRequestListener(details: any) {
         const filter = browser.webRequest.filterResponseData(details.requestId);
         const decoder = new TextDecoder("utf-8");
