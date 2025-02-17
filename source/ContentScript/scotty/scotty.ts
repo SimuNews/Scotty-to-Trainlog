@@ -16,7 +16,7 @@ namespace SCOTTY {
                 this.addEventListenersToBtns();
             } else if (e?.msg === "stt.scotty.upload.end") {
                 this.resetButton();
-                this.openDialog("Upload successfull", `Trip from ${e.args[0]} to ${e.args[1]} has been uploaded to Trainlog.`);
+                this.openDialog("Upload successfull", `Trip from ${e.args[1]} to ${e.args[2]} has been uploaded to Trainlog.`);
             } else if (e?.msg === "stt.scotty.no-username") {
                 this.resetButton();
                 this.openDialog("No Username", "Please enter your Trainlog username in the extension options.");

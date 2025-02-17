@@ -79,6 +79,11 @@ module.exports = {
         path.join(sourcePath, 'Background/db/dbToJourneyConverter.ts'),
         path.join(sourcePath, 'Background/db/db.ts'),
         path.join(sourcePath, 'ContentScript/db/db.ts'),
+        // INTERRAIL namespace
+        path.join(sourcePath, 'Background/interrail/interrailTypes.ts'),
+        path.join(sourcePath, 'Background/interrail/interrailToJourneyConverter.ts'),
+        path.join(sourcePath, 'Background/interrail/interrail.ts'),
+        path.join(sourcePath, 'ContentScript/interrail/interrail.ts'),
         // Other namespaces
         // OVERPASS
         path.join(sourcePath, 'Background/api/overpass.ts'),
@@ -216,7 +221,7 @@ module.exports = {
     // plugin to enable browser reloading in development mode
     extensionReloaderPlugin,
     new webpack.BannerPlugin({
-      banner: '(function(window){window.SCOTTY=window.SCOTTY||{};window.DBAHN=window.DBAHN||{};window.TLU=window.TLU||{};window.OVERPASS=window.OVERPASS||{};})(window);',
+      banner: '(function(window){window.SCOTTY=window.SCOTTY||{};window.DBAHN=window.DBAHN||{};window.TLU=window.TLU||{};window.OVERPASS=window.OVERPASS||{};window.INTERRAIL=window.INTERRAIL||{};})(window);',
       raw: true,
       entryOnly: true,
       include: /namespaces\.bundle\.js$/

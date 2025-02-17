@@ -21,3 +21,20 @@
     transform:rotate(360deg);
   }
 }
+
+.tlu-interrail {
+  margin-left: auto;
+  cursor: pointer;
+  display: flex;
+  > img {
+    width: 10px;
+    height: 10px;
+    align-self: center;
+  }
+  &.loading img {
+    animation: 1s linear 0s infinite forwards spin;
+  }
+  &:hover {
+    text-decoration: underline;
+  }
+}

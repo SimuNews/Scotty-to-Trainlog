@@ -87,7 +87,7 @@ namespace SCOTTY {
             const dateStr = date.substring(0, 4) + "-" + date.substring(4, 6) + "-" + date.substring(6);
             const timeStr = onlyTime.substring(0, 2) + ":" + onlyTime.substring(2, 4) + ":" + onlyTime.substring(4);
 
-            return this.addDays(new Date(Date.parse(dateStr + "T" + timeStr)), plusDays, offset ?? 0);
+            return this.addDays(new Date(Date.parse(dateStr + "T" + timeStr + "Z")), plusDays, offset ?? 0);
         }
 
         private addDays(date: Date, days: number, offset: number): Date {

@@ -43,22 +43,24 @@ namespace DBAHN {
         }
 
         private convertToTrainStation(station: Halt): TLU.TrainStation {
+            const arrDateString = station.ankunftsZeitpunkt ?? station.ezAnkunftsZeitpunkt ?? "";
+            const depDateString = station.ezAbfahrtsZeitpunkt ?? station.abfahrtsZeitpunkt ?? "";
             return {
                 name: station.name,
                 location: this.convertIdToLocation(station.id),
                 platform: station.gleis,
-                arrDateTime: new Date(station.ezAnkunftsZeitpunkt ?? station.ankunftsZeitpunkt ?? ""),
-                depDateTime: new Date(station.ezAbfahrtsZeitpunkt ?? station.abfahrtsZeitpunkt ?? ""),
+                arrDateTime: arrDateString ? new Date(arrDateString + "Z") : undefined,
+                depDateTime: depDateString ? new Date(depDateString + "Z") : undefined,
             } as TLU.TrainStation;
         }
 
         private findDepDateTimeForConnection(connection: Verbindung): Date {
-            return new Date(connection?.verbindungsAbschnitte[0]?.ezAbfahrtsZeitpunkt || connection?.verbindungsAbschnitte[0]?.abfahrtsZeitpunkt);
+            return new Date((connection?.verbindungsAbschnitte[0]?.ezAbfahrtsZeitpunkt || connection?.verbindungsAbschnitte[0]?.abfahrtsZeitpunkt) + "Z");
         }
 
         private findArrDateTimeForConnection(connection: Verbindung): Date {
             const lastIndex = connection.verbindungsAbschnitte.length - 1;
-            return new Date(connection?.verbindungsAbschnitte[lastIndex]?.ezAnkunftsZeitpunkt || connection?.verbindungsAbschnitte[lastIndex]?.ankunftsZeitpunkt);
+            return new Date((connection?.verbindungsAbschnitte[lastIndex]?.ezAnkunftsZeitpunkt || connection?.verbindungsAbschnitte[lastIndex]?.ankunftsZeitpunkt) + "Z");
         }
 
         private convertIdToLocation(id: string): TLU.Location {

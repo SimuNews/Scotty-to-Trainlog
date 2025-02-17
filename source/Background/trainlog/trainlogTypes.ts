@@ -34,7 +34,7 @@ namespace TLU {
     export interface TrainStation {
         name: string;
         location: Location;
-        platform: string;
+        platform?: string;
         depDateTime?: Date;
         arrDateTime?: Date;
         depDelay?: number;

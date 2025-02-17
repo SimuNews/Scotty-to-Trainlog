@@ -1,6 +1,6 @@
 namespace TLU {
 
-    async function getBestPossibleLocation(loc: Location, platform: string) {
+    async function getBestPossibleLocation(loc: Location, platform?: string) {
         if (!platform) {
             return loc;
         }

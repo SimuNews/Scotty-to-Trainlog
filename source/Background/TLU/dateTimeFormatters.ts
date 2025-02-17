@@ -11,8 +11,8 @@ namespace TLU {
         if (!date) {
             return "";
         }
-        const timeString = date.toTimeString();
-        return `${timeString.substring(0, 5)}`;
+        const timeString = date.toJSON();
+        return `${timeString.substring(11, 16)}`;
     }
 
     export function formatDateTime(date?: Date): string {

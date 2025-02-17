@@ -19,6 +19,8 @@
     "webRequestBlocking",
     "*://fahrplan.oebb.at/bin/mgate.exe*",
     "*://*.bahn.de/web/api*",
+    "*://*.interrail.eu/*",
+    "*://*.eurail.com/*",
     "*://*.trainlog.me/*"
   ],
 
@@ -69,7 +71,9 @@
   "content_scripts": [{
     "matches": [
       "*://fahrplan.oebb.at/*",
-      "*://*.bahn.de/*"
+      "*://*.bahn.de/*",
+      "*://*.interrail.eu/*",
+      "*://*.eurail.com/*"
     ],
     "js": [
       "js/namespaces.bundle.js",
@@ -82,6 +86,7 @@
 
   "web_accessible_resources": [
     "assets/icons/logo_trainlog.png",
-    "assets/icons/dbahn.png"
+    "assets/icons/dbahn.png",
+    "assets/icons/interrail.png"
   ]
 }
