@@ -64,11 +64,17 @@ module.exports = {
         // Core namespace declarations
         path.join(sourcePath, 'ContentScript/contentScript.ts'),  // TLU namespace
         // Background implementations
+        //scotty
         path.join(sourcePath, 'Background/scotty/scottyTypes.ts'),
         path.join(sourcePath, 'Background/scotty/scotty.ts'),
+        path.join(sourcePath, 'Background/scotty/scottyToJourneyConverter.ts'),
+        //db
         path.join(sourcePath, 'Background/db/dbTypes.ts'),
         path.join(sourcePath, 'Background/db/db.ts'),
+        path.join(sourcePath, 'Background/db/dbToJourneyConverter.ts'),
+        // TLU
         path.join(sourcePath, 'Background/TLU/tabUtils.ts'),
+        path.join(sourcePath, 'Background/trainlog/trainlogTypes.ts'),
         // Content script implementations
         path.join(sourcePath, 'ContentScript/scotty/scotty.ts'),
         path.join(sourcePath, 'ContentScript/db/db.ts'),

@@ -60,6 +60,7 @@
 
   "background": {
     "scripts": [
+      "js/namespaces.bundle.js",
       "js/background.bundle.js"
     ],
     "__chrome|opera__persistent": false
