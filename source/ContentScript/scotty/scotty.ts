@@ -26,7 +26,7 @@ namespace SCOTTY {
         public addEventListenersToBtns() {
             let clickableAtomBtns = document.querySelectorAll(".lyr_atomBtn");
             clickableAtomBtns.forEach((e) => {
-                e.addEventListener("click", this.appendTrainLogBtn);
+                e.addEventListener("click", () => this.appendTrainLogBtn());
             });
         }
 

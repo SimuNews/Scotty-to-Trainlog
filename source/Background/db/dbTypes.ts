@@ -1,20 +1,18 @@
 namespace DBAHN {
 
-    export enum Produktgattung {
-        ICE = "ICE",
-        EC_IC = "EC_IC",
-        IR = "IR",
-        REGIONAL = "REGIONAL",
-        SBAHN = "SBAHN",
-        UBAHN = "UBAHN",
-        TRAM = "TRAM",
-        BUS = "BUS"
-    }
+    export type Produktgattung = 
+    | "ICE"
+    | "EC_IC"
+    | "IR"
+    | "REGIONAL"
+    | "SBAHN"
+    | "UBAHN"
+    | "TRAM"
+    | "BUS";
 
-    export enum VerkehrsmittelTyp {
-        WALK = "WALK",
-        PUBLICTRANSPORT = "PUBLICTRANSPORT"
-    }
+    export type VerkehrsmittelTyp =
+    | "WALK"
+    | "PUBLICTRANSPORT";
 
     export interface DBahnResponse {
         verbindungen: Verbindung[];

@@ -1,6 +1,8 @@
 namespace TLU {
     export enum TrainlogTripType {
         TRAIN = "train",
+        METRO = "metro",
+        TRAM = "tram",
         BUS = "bus",
         AIRPLANE = "airplane",
         FERRY = "ferry",

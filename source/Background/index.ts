@@ -72,7 +72,7 @@ import { findNearestMatchingPlatform } from './api/overpassAPI';
             });
         } else if (message.dbConId) {
             if (!localStorage.getItem("username")) {
-                TLU.sendMessageToCurrentTab("stt.scotty.no-username");
+                TLU.sendMessageToCurrentTab("tlu.dbahn.no-username");
                 return;
             }
 
@@ -122,7 +122,7 @@ import { findNearestMatchingPlatform } from './api/overpassAPI';
             Promise.allSettled(promises).then((results) => {
                 console.log(results);
                 TLU.sendMessageToCurrentTab(
-                    "stt.scotty.upload.end",
+                    "tlu.dbahn.upload.end",
                     jny.legs[0].stations[0].name,
                     jny.legs[jny.legs.length - 1].stations[jny.legs[jny.legs.length - 1].stations.length - 1].name
                 );
@@ -166,10 +166,10 @@ import { findNearestMatchingPlatform } from './api/overpassAPI';
                 precision: "preciseDates",
                 newTripStartDate: jny.legs[i].stations[0].depDateTime?.toJSON().substring(0, 10),
                 newTripStartTime: jny.legs[i].stations[0].depDateTime?.toTimeString().substring(0, 5),
-                newTripStart: jny.legs[i].stations[0].depDateTime?.toISOString().substring(0, 16),
+                newTripStart: TLU.formatDateTime(jny.legs[i].stations[0].depDateTime),
                 newTripEndDate: jny.legs[i].stations[jny.legs[i].stations.length - 1].arrDateTime?.toJSON().substring(0, 10),
                 newTripEndTime: jny.legs[i].stations[jny.legs[i].stations.length - 1].arrDateTime?.toTimeString().substring(0, 5),
-                newTripEnd: jny.legs[i].stations[jny.legs[i].stations.length - 1].arrDateTime?.toISOString().substring(0, 16),  // Error: Server must have local datetime
+                newTripEnd: TLU.formatDateTime(jny.legs[i].stations[jny.legs[i].stations.length - 1].arrDateTime),
                 type: jny.legs[i].type,
                 price: "",
                 purchasing_date: jny.depDateTime.toJSON().substring(0, 10),

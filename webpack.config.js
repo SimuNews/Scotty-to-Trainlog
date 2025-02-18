@@ -74,6 +74,7 @@ module.exports = {
         path.join(sourcePath, 'Background/db/dbToJourneyConverter.ts'),
         // TLU
         path.join(sourcePath, 'Background/TLU/tabUtils.ts'),
+        path.join(sourcePath, 'Background/TLU/dateTimeFormatters.ts'),
         path.join(sourcePath, 'Background/trainlog/trainlogTypes.ts'),
         // Content script implementations
         path.join(sourcePath, 'ContentScript/scotty/scotty.ts'),
@@ -122,7 +123,8 @@ module.exports = {
           presets: [
             '@babel/preset-env',
             ['@babel/preset-typescript', {
-              allowNamespaces: true
+              allowNamespaces: true,
+              optimizeConstEnums: false
             }],
             '@babel/preset-react'
           ],
@@ -223,18 +225,16 @@ module.exports = {
       new TerserPlugin({
         parallel: true,
         terserOptions: {
-          format: {
-            comments: false,
-          },
           keep_classnames: true,
           keep_fnames: true,
           mangle: false,
           compress: {
             defaults: false,
-            pure_getters: true,
             keep_fnames: true,
             keep_classnames: true,
-            toplevel: false
+            pure_getters: true,
+            toplevel: false,
+            unused: false  // Important! Don't remove "unused" enum values
           }
         },
         extractComments: false,

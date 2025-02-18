@@ -38,7 +38,7 @@ namespace SCOTTY {
                         price: 0,
                         currency: "",
                         notes: "",
-                            type: lineName.startsWith("Bus") || lineName.startsWith("ICB") ? TLU.TrainlogTripType.BUS : lineName.startsWith("Schiff") ? TLU.TrainlogTripType.FERRY : TLU.TrainlogTripType.TRAIN
+                        type: lineName.startsWith("Bus") || lineName.startsWith("ICB") ? TLU.TrainlogTripType.BUS : lineName.startsWith("Schiff") ? TLU.TrainlogTripType.FERRY : lineName.startsWith("U") ? TLU.TrainlogTripType.METRO : lineName.startsWith("Tram") ? TLU.TrainlogTripType.TRAM : TLU.TrainlogTripType.TRAIN
                     });
                 }
             })
@@ -93,7 +93,8 @@ namespace SCOTTY {
         private addDays(date: Date, days: number, offset: number): Date {
             var date = new Date(date.valueOf());
             date.setDate(date.getDate() + days);
-            date.setTime(date.getTime() - date.getTimezoneOffset()*offset*1000)
+            offset = offset * 60 * 1000;
+            // date.setTime(date.getTime() - date.getTimezoneOffset()*offset*1000)
             return date;
         }
 

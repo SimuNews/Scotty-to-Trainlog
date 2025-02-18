@@ -10,7 +10,7 @@ namespace DBAHN {
             });
             const legs: TLU.Leg[] = [];
             for (const abschnitt of connection.verbindungsAbschnitte) {
-                if (abschnitt.verkehrsmittel.typ !== VerkehrsmittelTyp.PUBLICTRANSPORT) {
+                if (abschnitt.verkehrsmittel.typ !== "PUBLICTRANSPORT") {
                     continue;
                 }
                 legs.push(this.convertToLeg(abschnitt));
@@ -23,14 +23,22 @@ namespace DBAHN {
         }
 
         private convertToLeg(abschnitt: VerbindungsAbschnitt): TLU.Leg {
+            const { verkehrsmittel, halte } = abschnitt;
+            const { zugattribute, name, kategorie, produktGattung } = verkehrsmittel;
+            const operator = zugattribute.find(attr => attr.kategorie === "BETREIBER")?.value ?? "";
+            const type = produktGattung === "BUS" || kategorie === "Bsv" ? TLU.TrainlogTripType.BUS :
+                         produktGattung === "TRAM" ? TLU.TrainlogTripType.TRAM :
+                         produktGattung === "UBAHN" ? TLU.TrainlogTripType.METRO :
+                         TLU.TrainlogTripType.TRAIN;
+
             return {
-                stations: abschnitt.halte.map(this.convertToTrainStation),
-                operator: abschnitt.verkehrsmittel.zugattribute.find(attr => attr.kategorie === "BETREIBER")?.value ?? "",
-                lineName: abschnitt.verkehrsmittel.name,
+                stations: halte.map(station => this.convertToTrainStation(station)),
+                operator,
+                lineName: name,
                 price: 0,
                 currency: "",
                 notes: "",
-                type: abschnitt.verkehrsmittel.kategorie === "Bsv" || abschnitt.verkehrsmittel.produktGattung === Produktgattung.BUS ? TLU.TrainlogTripType.BUS : TLU.TrainlogTripType.TRAIN
+                type
             } as TLU.Leg;
         }
 
@@ -61,8 +69,8 @@ namespace DBAHN {
             console.log(id, match);
             
             return {
-                lat: Number(match.at(0)?.substring(2)) / 1000000,
-                lng: Number(match.at(1)?.substring(2)) / 1000000
+                lat: Number(match.at(1)?.substring(2)) / 1000000,
+                lng: Number(match.at(0)?.substring(2)) / 1000000
             };
         }
     }
