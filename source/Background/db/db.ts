@@ -23,7 +23,7 @@ namespace DBAHN {
             let str = decoder.decode(buffer);
             console.log("Deutche Bahn trip search", str);
             localStorage.setItem("tlu.dbahn.lastTripSearch", str);
-            TLU.sendMessageToCurrentTab("tlu.dbahn.timeTableLoaded");
+            TLU.sendMessageToAllTabs("tlu.dbahn.timeTableLoaded");
             filter.write(encoder.encode(str));
             filter.close();
         };

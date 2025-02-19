@@ -61,24 +61,28 @@ module.exports = {
     manifest: path.join(sourcePath, 'manifest.json'),
     namespaces: {
       import: [
-        // Core namespace declarations
-        path.join(sourcePath, 'ContentScript/contentScript.ts'),  // TLU namespace
-        // Background implementations
-        //scotty
-        path.join(sourcePath, 'Background/scotty/scottyTypes.ts'),
-        path.join(sourcePath, 'Background/scotty/scotty.ts'),
-        path.join(sourcePath, 'Background/scotty/scottyToJourneyConverter.ts'),
-        //db
-        path.join(sourcePath, 'Background/db/dbTypes.ts'),
-        path.join(sourcePath, 'Background/db/db.ts'),
-        path.join(sourcePath, 'Background/db/dbToJourneyConverter.ts'),
-        // TLU
-        path.join(sourcePath, 'Background/TLU/tabUtils.ts'),
+        // Base namespace declarations first
+        path.join(sourcePath, 'ContentScript/contentScript.ts'),
+        // TLU namespace and utils
         path.join(sourcePath, 'Background/TLU/dateTimeFormatters.ts'),
+        path.join(sourcePath, 'Background/TLU/tabUtils.ts'),
         path.join(sourcePath, 'Background/trainlog/trainlogTypes.ts'),
-        // Content script implementations
+        path.join(sourcePath, 'Background/trainlog/trainlog.ts'),
+        path.join(sourcePath, 'Background/api/trainlogAPI.ts'),
+        // SCOTTY namespace
+        path.join(sourcePath, 'Background/scotty/scottyTypes.ts'),
+        path.join(sourcePath, 'Background/scotty/scottyToJourneyConverter.ts'),
+        path.join(sourcePath, 'Background/scotty/scotty.ts'),
         path.join(sourcePath, 'ContentScript/scotty/scotty.ts'),
+        // DBAHN namespace
+        path.join(sourcePath, 'Background/db/dbTypes.ts'),
+        path.join(sourcePath, 'Background/db/dbToJourneyConverter.ts'),
+        path.join(sourcePath, 'Background/db/db.ts'),
         path.join(sourcePath, 'ContentScript/db/db.ts'),
+        // Other namespaces
+        // OVERPASS
+        path.join(sourcePath, 'Background/api/overpass.ts'),
+        path.join(sourcePath, 'Background/api/overpassAPI.ts'),
       ]
     },
     background: path.join(sourcePath, 'Background', 'index.ts'),
@@ -212,7 +216,7 @@ module.exports = {
     // plugin to enable browser reloading in development mode
     extensionReloaderPlugin,
     new webpack.BannerPlugin({
-      banner: '(function(window){window.SCOTTY=window.SCOTTY||{};window.DBAHN=window.DBAHN||{};window.TLU=window.TLU||{};})(window);',
+      banner: '(function(window){window.SCOTTY=window.SCOTTY||{};window.DBAHN=window.DBAHN||{};window.TLU=window.TLU||{};window.OVERPASS=window.OVERPASS||{};})(window);',
       raw: true,
       entryOnly: true,
       include: /namespaces\.bundle\.js$/

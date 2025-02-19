@@ -1,5 +1,4 @@
-import { OverpassResponse } from "./overpass";
-import * as $ from "jquery";
+namespace OVERPASS {
 
 	const baseUrl = "https://overpass.private.coffee/api/interpreter";
 
@@ -16,13 +15,24 @@ import * as $ from "jquery";
             out;
         `;
 
-        const deferred = $.Deferred<TLU.Location>();
-        new ApiUrl(baseUrl).post(
-            {"data": overpassQuery}
-        )
-        .then((json: OverpassResponse) => {
+        try {
+            const response = await fetch(baseUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    data: overpassQuery
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const json: OverpassResponse = await response.json();
             console.log(json);
-			
+            
             const way = json.elements.filter(e => e.type === "way")?.at(0);
             const nodes = json.elements.filter(e => e.type === "node");
 
@@ -37,15 +47,14 @@ import * as $ from "jquery";
 			}
 
 			console.log("Resolve platform: " + platform);
-            deferred.resolve({
+            return {
                 lat: midpoint(p1, p2).lat || location.lat,
                 lng: midpoint(p1, p2).lng || location.lng
-            });
-        })
-        .fail(() => deferred.resolve({
-			lat: location.lat, lng: location.lng
-		}));
-        return deferred.promise();
+            };
+        } catch (error) {
+            console.error('Error:', error);
+            return location;
+        }
 	}
 
 	function midpoint(p1: TLU.Location, p2: TLU.Location): TLU.Location {
@@ -88,3 +97,9 @@ import * as $ from "jquery";
 			return $.ajax(ajaxSettings);
 		}
     }
+}
+
+window.OVERPASS = {
+	...window.OVERPASS,
+	...OVERPASS
+}

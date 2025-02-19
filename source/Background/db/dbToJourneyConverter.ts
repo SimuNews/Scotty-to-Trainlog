@@ -24,7 +24,7 @@ namespace DBAHN {
 
         private convertToLeg(abschnitt: VerbindungsAbschnitt): TLU.Leg {
             const { verkehrsmittel, halte } = abschnitt;
-            const { zugattribute, name, kategorie, produktGattung } = verkehrsmittel;
+            const { zugattribute, mittelText, kategorie, produktGattung } = verkehrsmittel;
             const operator = zugattribute.find(attr => attr.kategorie === "BETREIBER")?.value ?? "";
             const type = produktGattung === "BUS" || kategorie === "Bsv" ? TLU.TrainlogTripType.BUS :
                          produktGattung === "TRAM" ? TLU.TrainlogTripType.TRAM :
@@ -34,7 +34,7 @@ namespace DBAHN {
             return {
                 stations: halte.map(station => this.convertToTrainStation(station)),
                 operator,
-                lineName: name,
+                lineName: mittelText,
                 price: 0,
                 currency: "",
                 notes: "",

@@ -26,7 +26,7 @@ namespace SCOTTY {
             const response: ScottyResponse = JSON.parse(str);
             if (response?.svcResL[0]?.meth === "TripSearch") {
                 localStorage.setItem("lastTripSearch", str);
-                TLU.sendMessageToCurrentTab("stt.scotty.saved");
+                TLU.sendMessageToAllTabs("stt.scotty.saved");
             }
             filter.write(encoder.encode(str));
             filter.close();

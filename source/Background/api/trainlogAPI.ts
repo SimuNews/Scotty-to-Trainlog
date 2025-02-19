@@ -1,4 +1,4 @@
-	import * as $ from "jquery";
+namespace TLU {
 	const baseUrl = "https://trainlog.me";
 
 	export function api(url: string, background: boolean = false): ApiUrl {
@@ -14,33 +14,40 @@
 			this.background = background;
 		}
 
-		public get(params: any = {}): JQueryXHR {
+		public async get(params: any = {}): Promise<Response> {
 			return this.ajax("GET", params);
 		}
 
-		public post(data: any = {}): JQueryXHR {
+		public async post(data: any = {}): Promise<Response> {
 			return this.ajax("POST", data);
 		}
 
-		public put(data: any = {}): JQueryXHR {
+		public async put(data: any = {}): Promise<Response> {
 			return this.ajax("PUT", data);
 		}
 
-		private ajax(method: "GET" | "POST" | "PUT", data: any): JQueryXHR {
-			const ajaxSettings = {
-				url: this.url,
-				contentType: "application/x-www-form-urlencoded",
-				method: method,
-				// dataType: "jsonp",
-				crossDomain: true,
-				headers: {
-					"Access-Control-Allow-Credentials": "true",
-					"Access-Control-Allow-Origin": "https://trainlog.me"
-				},
-				data: data,
-				cache: false
-             } as JQueryAjaxSettings;
+		private async ajax(method: "GET" | "POST" | "PUT", data: any): Promise<Response> {
+			const headers = new Headers({
+				"Content-Type": "application/x-www-form-urlencoded",
+				"Access-Control-Allow-Credentials": "true",
+				"Access-Control-Allow-Origin": "https://trainlog.me"
+			});
 
-			return $.ajax(ajaxSettings);
+			const options: RequestInit = {
+				method: method,
+				headers: headers,
+				body: method !== "GET" ? new URLSearchParams(data).toString() : undefined,
+				credentials: "include"
+			};
+
+			const urlWithParams = method === "GET" ? `${this.url}?${new URLSearchParams(data).toString()}` : this.url;
+
+			return fetch(urlWithParams, options);
 		}
 	}
+}
+
+window.TLU = {
+    ...window.TLU,
+    ...TLU
+};

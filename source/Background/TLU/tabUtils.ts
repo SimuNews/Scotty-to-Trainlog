@@ -8,16 +8,25 @@ namespace TLU {
     *     options (optional object) same as tabs.sendMessage():'frameId' prop is the frame ID.
     * )
     */
-    export function sendMessageToCurrentTab(msg: string, ...messageArgs: any[]) {
-        var args: any[] = Array.of({msg: msg, args: messageArgs}); //Get arguments as an array
-        return browser.tabs.query({active:true,currentWindow:true}).then((tabs: any) => {
-            args.unshift(tabs[0].id); //Add tab ID to be the new first argument.
-            return browser.tabs.sendMessage.apply(globalThis, args as any);
-        });
+    export function sendMessageToAllTabs(msg: string, ...messageArgs: any[]) {
+        return browser.tabs.query({currentWindow: true})
+            .then((tabs) => {
+                return Promise.all(
+                    tabs.map(tab => 
+                        browser.tabs.sendMessage(tab.id!, {msg: msg, args: messageArgs})
+                            .catch(err => {
+                                // Ignore errors about non-existing connections
+                                if (!err.message.includes("Receiving end does not exist")) {
+                                    console.error(`Error sending message to tab ${tab.id}:`, err);
+                                }
+                            })
+                    )
+                );
+            });
     }
 }
 
 window.TLU = {
     ...window.TLU,
     ...TLU
-}
+};
