@@ -1,35 +1,36 @@
-# Trainlog Utilities
+Here's a quick tutorial on how to build the extension:
 
-## Overview
+# Building the Browser Extension - Quick Guide
 
-The following instructions will help you reproduce the build and ensure that the generated sources match those in the extension.
-
-## Operating System and Environment Requirements
-
+## Prerequisites
 - **Operating System**: macOS, Linux, or Windows
 - **Node.js**: v14.x or higher
 - **npm**: v6.x or higher
 
-## Tools and Utilities
+## Steps
 
-No additional tools or utilities are required.
+1. **Make the build script executable**
+```bash
+chmod +x build.sh
+```
 
-## Installation Instructions
+2. **Run the build script**
+```bash
+./build.sh
+```
 
-1. Install the required dependencies:
-    ```sh
-    npm install
-    ```
+The script will:
+- Clean previous builds
+- Install all dependencies
+- Build the extension for Firefox
 
-## Build Instructions
+## What happens during the build
+- The extension will be built for all supported browsers
+- Output files will be in the `extension` directory:
+  - `extension/firefox.xpi` - Firefox version
 
-To generate an identical copy of the extension from the source code, follow these steps:
-
-1. Run the build script:
-    ```sh
-    npm run build:firefox
-    ```
-
-## Verification
-
-The finished build will be found in `./extension/`
+## Troubleshooting
+If you encounter any errors:
+1. Make sure Node.js is installed correctly
+2. Try deleting the `node_modules` folder and running `./build.sh` again
+3. Check if all files are in the correct locations (webpack.config.js, .babelrc, etc.)
