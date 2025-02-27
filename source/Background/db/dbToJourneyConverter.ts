@@ -29,6 +29,7 @@ namespace DBAHN {
             const type = produktGattung === "BUS" || kategorie === "Bsv" ? TLU.TrainlogTripType.BUS :
                          produktGattung === "TRAM" ? TLU.TrainlogTripType.TRAM :
                          produktGattung === "UBAHN" ? TLU.TrainlogTripType.METRO :
+                         produktGattung === "SCHIFF" ? TLU.TrainlogTripType.FERRY :
                          TLU.TrainlogTripType.TRAIN;
 
             return {

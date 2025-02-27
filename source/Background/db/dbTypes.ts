@@ -8,7 +8,8 @@ namespace DBAHN {
     | "SBAHN"
     | "UBAHN"
     | "TRAM"
-    | "BUS";
+    | "BUS"
+    | "SCHIFF";
 
     export type VerkehrsmittelTyp =
     | "WALK"
