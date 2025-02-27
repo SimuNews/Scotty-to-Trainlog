@@ -10,6 +10,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const WextManifestWebpackPlugin = require('wext-manifest-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
+const glob = require('glob');
 
 const viewsPath = path.join(__dirname, 'views');
 const sourcePath = path.join(__dirname, 'source');
@@ -45,6 +46,19 @@ const getExtensionFileType = (browser) => {
   return 'zip';
 };
 
+function getEntries(pattern) {
+  return glob.sync(pattern);
+}
+
+// Helper to sort files so *Types.ts comes first
+function sortByTypes(files) {
+  return files.sort((a, b) => {
+    if (a.includes('Types.ts') && !b.includes('Types.ts')) return -1;
+    if (!a.includes('Types.ts') && b.includes('Types.ts')) return 1;
+    return a.localeCompare(b);
+  });
+}
+
 module.exports = {
   devtool: false, // https://github.com/webpack/webpack/issues/1194#issuecomment-560382342
 
@@ -59,39 +73,40 @@ module.exports = {
 
   entry: {
     manifest: path.join(sourcePath, 'manifest.json'),
-    namespaces: {
+    background: {
       import: [
-        // Base namespace declarations first
-        path.join(sourcePath, 'ContentScript/contentScript.ts'),
-        // TLU namespace and utils
-        path.join(sourcePath, 'Background/TLU/dateTimeFormatters.ts'),
-        path.join(sourcePath, 'Background/TLU/tabUtils.ts'),
-        path.join(sourcePath, 'Background/trainlog/trainlogTypes.ts'),
-        path.join(sourcePath, 'Background/trainlog/trainlog.ts'),
-        path.join(sourcePath, 'Background/api/trainlogAPI.ts'),
-        // SCOTTY namespace
-        path.join(sourcePath, 'Background/scotty/scottyTypes.ts'),
-        path.join(sourcePath, 'Background/scotty/scottyToJourneyConverter.ts'),
-        path.join(sourcePath, 'Background/scotty/scotty.ts'),
-        path.join(sourcePath, 'ContentScript/scotty/scotty.ts'),
-        // DBAHN namespace
-        path.join(sourcePath, 'Background/db/dbTypes.ts'),
-        path.join(sourcePath, 'Background/db/dbToJourneyConverter.ts'),
-        path.join(sourcePath, 'Background/db/db.ts'),
-        path.join(sourcePath, 'ContentScript/db/db.ts'),
-        // INTERRAIL namespace
-        path.join(sourcePath, 'Background/interrail/interrailTypes.ts'),
-        path.join(sourcePath, 'Background/interrail/interrailToJourneyConverter.ts'),
-        path.join(sourcePath, 'Background/interrail/interrail.ts'),
-        path.join(sourcePath, 'ContentScript/interrail/interrail.ts'),
-        // Other namespaces
-        // OVERPASS
-        path.join(sourcePath, 'Background/api/overpass.ts'),
-        path.join(sourcePath, 'Background/api/overpassAPI.ts'),
+        // Then other namespaces in order
+        ...sortByTypes(getEntries(path.join(sourcePath, 'Background/TLU/*.ts'))),
+        ...sortByTypes(getEntries(path.join(sourcePath, 'Background/trainlog/*.ts'))),
+        ...sortByTypes(getEntries(path.join(sourcePath, 'Background/api/*.ts'))),
+        ...sortByTypes(getEntries(path.join(sourcePath, 'Background/scotty/*.ts'))),
+        ...sortByTypes(getEntries(path.join(sourcePath, 'Background/db/*.ts'))),
+        ...sortByTypes(getEntries(path.join(sourcePath, 'Background/interrail/*.ts'))),
+        // BASE
+        path.join(sourcePath, 'Background/index.ts')
       ]
     },
-    background: path.join(sourcePath, 'Background', 'index.ts'),
-    contentScript: path.join(sourcePath, 'ContentScript', 'index.ts'),
+    scotty: {
+      import: [
+        path.join(sourcePath, 'ContentScript/contentScript.ts'),
+        ...getEntries(path.join(sourcePath, 'ContentScript/scotty/*.ts')),
+        path.join(sourcePath, 'ContentScript', 'index.ts')
+      ]
+    },
+    dbahn: {
+      import: [
+        path.join(sourcePath, 'ContentScript/contentScript.ts'),
+        ...getEntries(path.join(sourcePath, 'ContentScript/db/*.ts')),
+        path.join(sourcePath, 'ContentScript', 'index.ts')
+      ]
+    },
+    interrail: {
+      import: [
+        path.join(sourcePath, 'ContentScript/contentScript.ts'),
+        ...getEntries(path.join(sourcePath, 'ContentScript/interrail/*.ts')),
+        path.join(sourcePath, 'ContentScript', 'index.ts')
+      ]
+    },
     popup: path.join(sourcePath, 'Popup', 'index.ts'),
     options: path.join(sourcePath, 'Options', 'index.ts'),
   },
@@ -224,7 +239,7 @@ module.exports = {
       banner: '(function(window){window.SCOTTY=window.SCOTTY||{};window.DBAHN=window.DBAHN||{};window.TLU=window.TLU||{};window.OVERPASS=window.OVERPASS||{};window.INTERRAIL=window.INTERRAIL||{};})(window);',
       raw: true,
       entryOnly: true,
-      include: /namespaces\.bundle\.js$/
+      include: /\.bundle\.js$/  // Match any .bundle.js file
     }),
   ],
 

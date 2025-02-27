@@ -62,7 +62,6 @@
 
   "background": {
     "scripts": [
-      "js/namespaces.bundle.js",
       "js/background.bundle.js"
     ],
     "__chrome|opera__persistent": false
@@ -70,17 +69,36 @@
 
   "content_scripts": [{
     "matches": [
-      "*://fahrplan.oebb.at/*",
-      "*://*.bahn.de/*",
+      "*://fahrplan.oebb.at/*"
+    ],
+    "js": [
+      "js/scotty.bundle.js"
+    ],
+    "css": [
+      "css/scotty.css"
+    ]
+  },
+  {
+    "matches": [
+      "*://*.bahn.de/*"
+    ],
+    "js": [
+      "js/dbahn.bundle.js"
+    ],
+    "css": [
+      "css/dbahn.css"
+    ]
+  },
+  {
+    "matches": [
       "*://*.interrail.eu/*",
       "*://*.eurail.com/*"
     ],
     "js": [
-      "js/namespaces.bundle.js",
-      "js/contentScript.bundle.js"
+      "js/interrail.bundle.js"
     ],
     "css": [
-      "css/contentScript.css"
+      "css/interrail.css"
     ]
   }],
 
