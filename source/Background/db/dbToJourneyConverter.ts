@@ -4,10 +4,6 @@ namespace DBAHN {
         public convert(conId: number, response: DBahnResponse): TLU.Journey {
             
             const connection = response.verbindungen[conId];
-            connection.verbindungsAbschnitte.forEach((abschnitt: VerbindungsAbschnitt) => {
-                console.log(abschnitt);
-                "".matchAll(/(O|X|Y)=([\d|A-Z|a-z| ]+)/gm);
-            });
             const legs: TLU.Leg[] = [];
             for (const abschnitt of connection.verbindungsAbschnitte) {
                 if (abschnitt.verkehrsmittel.typ !== "PUBLICTRANSPORT") {
@@ -44,8 +40,10 @@ namespace DBAHN {
         }
 
         private convertToTrainStation(station: Halt): TLU.TrainStation {
-            const arrDateString = station.ankunftsZeitpunkt ?? station.ezAnkunftsZeitpunkt ?? "";
-            const depDateString = station.ezAbfahrtsZeitpunkt ?? station.abfahrtsZeitpunkt ?? "";
+            const realTimeArrival = TLU.Options.isPreventRealtime() ? null : station.ezAnkunftsZeitpunkt;
+            const realTimeDeparture = TLU.Options.isPreventRealtime() ? null : station.ezAbfahrtsZeitpunkt;
+            const arrDateString = realTimeArrival ?? station.ankunftsZeitpunkt ?? "";
+            const depDateString = realTimeDeparture ?? station.abfahrtsZeitpunkt ?? "";
             return {
                 name: station.name,
                 location: this.convertIdToLocation(station.id),
@@ -56,12 +54,14 @@ namespace DBAHN {
         }
 
         private findDepDateTimeForConnection(connection: Verbindung): Date {
-            return new Date((connection?.verbindungsAbschnitte[0]?.ezAbfahrtsZeitpunkt || connection?.verbindungsAbschnitte[0]?.abfahrtsZeitpunkt) + "Z");
+            const realTimeDeparture = TLU.Options.isPreventRealtime() ? null : connection?.verbindungsAbschnitte[0]?.ezAbfahrtsZeitpunkt;
+            return new Date((realTimeDeparture || connection?.verbindungsAbschnitte[0]?.abfahrtsZeitpunkt) + "Z");
         }
 
         private findArrDateTimeForConnection(connection: Verbindung): Date {
             const lastIndex = connection.verbindungsAbschnitte.length - 1;
-            return new Date((connection?.verbindungsAbschnitte[lastIndex]?.ezAnkunftsZeitpunkt || connection?.verbindungsAbschnitte[lastIndex]?.ankunftsZeitpunkt) + "Z");
+            const realTimeArrival = TLU.Options.isPreventRealtime() ? null : connection?.verbindungsAbschnitte[lastIndex]?.ezAnkunftsZeitpunkt;
+            return new Date((realTimeArrival || connection?.verbindungsAbschnitte[lastIndex]?.ankunftsZeitpunkt) + "Z");
         }
 
         private convertIdToLocation(id: string): TLU.Location {

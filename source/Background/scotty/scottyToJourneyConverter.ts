@@ -17,8 +17,8 @@ namespace SCOTTY {
             const con = this.connections[conId];
             return {
                 legs: this.connectionToLegs(con),
-                depDateTime: this.formatDate(con.date, con.dep.dTimeR ?? con.dep.dTimeS, con.dep.dTZOffset),
-                arrDateTime: this.formatDate(con.date, con.arr.aTimeR ?? con.arr.aTimeS, con.arr.aTZOffset)
+                depDateTime: this.formatDate(con.date, con.dep.dTimeR, con.dep.dTimeS, con.dep.dTZOffset),
+                arrDateTime: this.formatDate(con.date, con.arr.aTimeR, con.arr.aTimeS, con.arr.aTZOffset)
             } as TLU.Journey;
         }
 
@@ -55,8 +55,8 @@ namespace SCOTTY {
                     name: loc.name,
                     location: this.crdToLocation(loc.crd),
                     platform: this.stopToPlatform(stop),
-                    depDateTime: this.formatDate(jny.date, stop.dTimeR ?? stop.dTimeS, stop.dTZOffset),
-                    arrDateTime: this.formatDate(jny.date, stop.aTimeR ?? stop.aTimeS, stop.aTZOffset)
+                    depDateTime: this.formatDate(jny.date, stop.dTimeR, stop.dTimeS, stop.dTZOffset),
+                    arrDateTime: this.formatDate(jny.date, stop.aTimeR, stop.aTimeS, stop.aTZOffset)
                 });
             }
 
@@ -71,12 +71,15 @@ namespace SCOTTY {
         }
 
         private stopToPlatform(stop: StopL): string {
-            const departurePlatform = stop.dPltfR ? stop.dPltfR.txt.replace(/[^0-9]/g, "") : stop.dPltfS?.txt.replace(/[^0-9]/g, "");
-            const arrivalPlatform = stop.aPltfR ? stop.aPltfR.txt.replace(/[^0-9]/g, "") : stop.aPltfS?.txt.replace(/[^0-9]/g, "");
+            const realTimeDeparturePlatform = TLU.Options.isPreventRealtime() ? null : stop.dPltfR?.txt.replace(/[^0-9]/g, "");
+            const realTimeArrivalPlatform = TLU.Options.isPreventRealtime() ? null : stop.aPltfR?.txt.replace(/[^0-9]/g, "");
+            const departurePlatform = realTimeDeparturePlatform ? realTimeDeparturePlatform : stop.dPltfS?.txt.replace(/[^0-9]/g, "");
+            const arrivalPlatform = realTimeArrivalPlatform ? realTimeArrivalPlatform : stop.aPltfS?.txt.replace(/[^0-9]/g, "");
             return departurePlatform ? departurePlatform : arrivalPlatform ? arrivalPlatform : "";
         }
 
-        private formatDate(date: string, time?: string, offset?: number): Date | undefined {
+        private formatDate(date: string, realTime?: string, scheduledTime?: string, offset?: number): Date | undefined {
+            const time = TLU.Options.isPreventRealtime() ? scheduledTime : realTime ?? scheduledTime;
             if (!time) {
                 return undefined;
             }
