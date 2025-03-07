@@ -7,3 +7,7 @@ function initPopup() {
 }
 
 initPopup();
+
+document.getElementById("tlu-options")?.addEventListener("click", () => {
+    browser.runtime.openOptionsPage();
+});
