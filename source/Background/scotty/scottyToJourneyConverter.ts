@@ -38,7 +38,7 @@ namespace SCOTTY {
                         price: 0,
                         currency: "",
                         notes: "",
-                        type: lineName.startsWith("Bus") || lineName.startsWith("ICB") ? TLU.TrainlogTripType.BUS : lineName.startsWith("Schiff") ? TLU.TrainlogTripType.FERRY : lineName.startsWith("U") ? TLU.TrainlogTripType.METRO : lineName.startsWith("Tram") ? TLU.TrainlogTripType.TRAM : TLU.TrainlogTripType.TRAIN
+                        type: lineName.startsWith("Bus") || lineName.startsWith("O-Bus") || lineName.startsWith("ICB") ? TLU.TrainlogTripType.BUS : lineName.startsWith("Schiff") ? TLU.TrainlogTripType.FERRY : lineName.startsWith("U") ? TLU.TrainlogTripType.METRO : lineName.startsWith("Tram") ? TLU.TrainlogTripType.TRAM : TLU.TrainlogTripType.TRAIN
                     });
                 }
             })
