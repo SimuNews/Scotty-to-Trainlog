@@ -48,5 +48,5 @@ jobs:
             --api-key ${{ secrets.FIREFOX_API_KEY }} \
             --api-secret ${{ secrets.FIREFOX_API_SECRET }} \
             --channel listed \
-            --upload-source-code source.zip
+            --upload-source-code source.zip \
             --approval-timeout 0
