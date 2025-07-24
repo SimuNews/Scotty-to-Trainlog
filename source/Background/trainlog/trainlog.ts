@@ -1,18 +1,18 @@
 namespace TLU {
 
-    async function getBestPossibleLocation(loc: Location, platform?: string) {
-        if (!platform) {
-            return loc;
+    async function getBestPossibleLocation(loc: TLU.Location, platform?: string) {
+        if (!platform || !window.TLU.Options.isUsePlatformSpecificWaypoints()) {
+            return Promise.resolve(loc);
         }
         return OVERPASS.findNearestMatchingPlatform(loc, platform);
     }
 
-    function locationToArray(loc: Location): number[] {
+    function locationToArray(loc: TLU.Location): number[] {
         return [loc.lat, loc.lng];
     }
 
     export async function buildTrip(jny: TLU.Journey, i: number, operator: string) {
-        const waypoints: Location[] = [];
+        const waypoints: TLU.Location[] = [];
         for (let index = 1; index < jny.legs[i].stations.length - 2; index++) {
             const s = jny.legs[i].stations[index];
             console.log("Station: " + s.name);
