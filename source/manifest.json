@@ -17,7 +17,7 @@
     "storage",
     "webRequest",
     "webRequestBlocking",
-    "*://fahrplan.oebb.at/bin/mgate.exe*",
+    "*://fahrplan.oebb.at/*",
     "*://*.bahn.de/web/api*",
     "*://*.interrail.eu/*",
     "*://*.eurail.com/*",

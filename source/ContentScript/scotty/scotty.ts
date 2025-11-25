@@ -13,6 +13,7 @@ namespace SCOTTY {
 
         public eventListener(e: { msg: string; args: any[]; }) {
             if (e?.msg === "stt.scotty.saved") {
+                this.appendTrainLogBtn();
                 this.addEventListenersToBtns();
             } else if (e?.msg === "stt.scotty.upload.end") {
                 this.resetButton();

@@ -3,7 +3,7 @@ namespace SCOTTY {
     export function registerWebRequestListener(): void {
         browser.webRequest.onBeforeRequest.addListener(
             webRequestListener,
-            { urls: ["*://fahrplan.oebb.at/bin/mgate.exe*"], types: ["xmlhttprequest"] },
+            { urls: ["*://fahrplan.oebb.at/gate*"], types: ["xmlhttprequest"] },
             ["blocking"],
         );
     }
