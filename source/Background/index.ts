@@ -67,19 +67,32 @@ browser.runtime.onMessage.addListener(async (message: any) => {
             );
         }
 
-        Promise.all(promises)
+        Promise.allSettled(promises)
         .then((results) => {
             console.log(results);
-            TLU.sendMessageToAllTabs(
-                allSuccessMessage,
-                conId,
-                convertedJourney.legs[0].stations[0].name,
-                convertedJourney.legs[convertedJourney.legs.length - 1].stations[convertedJourney.legs[convertedJourney.legs.length - 1].stations.length - 1].name
-            );
-        })
-        .catch((error) => {
-            console.error("Error uploading trips: ", error);
-            TLU.sendMessageToAllTabs(anyErrorMessage, conId);
+            let allSuccess = true;
+            for (const result of results) {
+                if (result.status === "fulfilled") {
+                    const reponse: Response = result.value;
+                    if (!reponse.ok) {
+                        allSuccess = false;
+                    }
+                }
+            }
+            if (!allSuccess) {
+                TLU.sendMessageToAllTabs(
+                    anyErrorMessage,
+                    conId
+                );
+            } else {
+                TLU.sendMessageToAllTabs(
+                    allSuccessMessage,
+                    conId,
+                    convertedJourney.legs[0].stations[0].name,
+                    convertedJourney.legs[convertedJourney.legs.length - 1].stations[convertedJourney.legs[convertedJourney.legs.length - 1].stations.length - 1].name
+                );
+            }
+            
         });
     }
 
