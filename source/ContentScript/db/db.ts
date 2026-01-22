@@ -34,7 +34,7 @@ namespace DBAHN {
                 ).forEach((element) => {
                     element.appendChild(this.createTrainLogBtn())
                 });
-            }, 1000);
+            }, 250);
         }
 
         private createTrainLogBtn(): HTMLElement {

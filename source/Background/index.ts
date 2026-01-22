@@ -29,7 +29,7 @@ browser.runtime.onMessage.addListener(async (message: any) => {
         const str = localStorage.getItem("tlu.dbahn.lastTripSearch") as string;
         const jny = new DBAHN.DbToJourneyConverter().convert(Number(message.dbConId), JSON.parse(str) as DBAHN.DBahnResponse);
         await uploadJourney(jny, 0, "tlu.dbahn.upload.end", "tlu.dbahn.upload.error");
-    } else if (message.interrailConId) {
+    } else if (message.interrailConId != null) {
         const conId = Number(message.interrailConId);
         if (!localStorage.getItem("username")) {
             TLU.sendMessageToAllTabs("tlu.interrail.no-username", conId);

@@ -3,10 +3,18 @@ namespace INTERRAIL {
     export function eventListener(e: { msg: string; args: any[]; }) {
         console.log("eventListener", e);
         if (e?.msg === "tlu.interrail.timeTableLoaded") {
-            placeTrainLogBtn();
+            const intervalId = setInterval(() => {
+                if (document.querySelectorAll(".journey__card").length > 0) {
+                    placeTrainLogBtn();
+                    clearInterval(intervalId);
+                }
+            }, 250);
         } else if (e?.msg === "tlu.interrail.upload.end") {
             resetButton(e.args[0]);
             openDialog("Upload successfull", `Trip from ${e.args[1]} to ${e.args[2]} has been uploaded to Trainlog.`);
+        } else if (e?.msg === "tlu.interrail.upload.error") {
+            resetButton(e.args[0]);
+            openDialog("Upload failed", `One or more trips could not be uploaded to Trainlog. Please try again later or contact support.`);
         } else if (e?.msg === "tlu.interrail.no-username") {
             resetButton(e.args[0]);
             openDialog("No Username", "Please enter your Trainlog username in the extension options.");
@@ -20,7 +28,8 @@ namespace INTERRAIL {
     </div>
      */
     export function placeTrainLogBtn() {
-        document.querySelectorAll(".journey__card__status").forEach((element: Element, index: number) => {
+        console.log("Placing Trainlog button");
+        document.querySelectorAll(".journey__card").forEach((element: Element, index: number) => {
             element.querySelectorAll(".journey__label.tlu-interrail").forEach((el: Element) => el.remove());
             const trainLogBtn = document.createElement("div");
             trainLogBtn.setAttribute("data-interrail-tlu-index", index.toString());
@@ -72,9 +81,7 @@ namespace INTERRAIL {
                                             <div class="my-account__content">
                                                 <div class="ma-view">
                                                     <h1 class="ma-view__header sg-headline-1">${title}</h1>
-                                                    <div>
-                                                        ${message}
-                                                    </div>
+                                                    <p class="ma-view__subtitle">${message}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -89,7 +96,7 @@ namespace INTERRAIL {
 
         const dialogContainer = document.createElement('div');
         dialogContainer.innerHTML = dialogHtml;
-        document.body.appendChild(dialogContainer);
+        document.querySelector(".timetable-container")?.appendChild(dialogContainer);
         dialogContainer.querySelectorAll('[data-close-dialog]').forEach(i => i.addEventListener('click', () => closeDialog(randId)));
     }
 
