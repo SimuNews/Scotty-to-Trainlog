@@ -1,0 +1,27 @@
+.tlu-dbahn-button {
+    border-top: .0625rem solid #d7dce1;
+    padding: .75rem 1.5rem;
+
+    &.loading img {
+        animation: 1s linear 0s infinite forwards spin;
+    }
+}
+
+@keyframes spin {
+  from {
+    transform:rotate(0deg);
+  }
+  to {
+    transform:rotate(360deg);
+  }
+}
+
+[data-tlu-dbahn-dialog] {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 100px;
+  & > *:first-child {
+    border: none;
+  }
+}

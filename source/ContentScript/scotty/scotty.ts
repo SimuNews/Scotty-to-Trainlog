@@ -18,6 +18,9 @@ namespace SCOTTY {
             } else if (e?.msg === "stt.scotty.upload.end") {
                 this.resetButton();
                 this.openDialog("Upload successfull", `Trip from ${e.args[1]} to ${e.args[2]} has been uploaded to Trainlog.`);
+            } else if (e?.msg === "stt.scotty.upload.error") {
+                this.resetButton();
+                this.openDialog("Upload failed", `One or more trips could not be uploaded to Trainlog. Please try again later or contact support.`);
             } else if (e?.msg === "stt.scotty.no-username") {
                 this.resetButton();
                 this.openDialog("No Username", "Please enter your Trainlog username in the extension options.");

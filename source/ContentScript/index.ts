@@ -2,6 +2,7 @@ import { browser } from "webextension-polyfill-ts";
 
 // import all css files
 import "../styles/trainlog_utilities.scss";
+import "../styles/dbahn.scss";
 
 browser.runtime.onMessage.addListener((e: {msg: string, args: any[]}) => {
     if (SCOTTY.ScottyScript) {

@@ -67,8 +67,8 @@ browser.runtime.onMessage.addListener(async (message: any) => {
             );
         }
 
-        anyErrorMessage = anyErrorMessage;
-        Promise.allSettled(promises).then((results) => {
+        Promise.all(promises)
+        .then((results) => {
             console.log(results);
             TLU.sendMessageToAllTabs(
                 allSuccessMessage,
@@ -76,6 +76,10 @@ browser.runtime.onMessage.addListener(async (message: any) => {
                 convertedJourney.legs[0].stations[0].name,
                 convertedJourney.legs[convertedJourney.legs.length - 1].stations[convertedJourney.legs[convertedJourney.legs.length - 1].stations.length - 1].name
             );
+        })
+        .catch((error) => {
+            console.error("Error uploading trips: ", error);
+            TLU.sendMessageToAllTabs(anyErrorMessage, conId);
         });
     }
 
