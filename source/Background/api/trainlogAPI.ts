@@ -1,8 +1,12 @@
 namespace TLU {
-	const baseUrl = "https://trainlog.me";
+
+	function getBaseUrl(): string {
+		const baseUrl = window.TLU?.Options?.getBaseUrl?.();
+		return baseUrl || "http://trainglog.me";
+	}
 
 	export function api(url: string, background: boolean = false): ApiUrl {
-		return new ApiUrl(baseUrl + "/" + url, background);
+		return new ApiUrl(getBaseUrl() + "/" + url, background);
 	}
 
 	export class ApiUrl {
@@ -30,7 +34,7 @@ namespace TLU {
 			const headers = new Headers({
 				"Content-Type": "application/x-www-form-urlencoded",
 				"Access-Control-Allow-Credentials": "true",
-				"Access-Control-Allow-Origin": "https://trainlog.me"
+				"Access-Control-Allow-Origin": getBaseUrl()
 			});
 
 			const options: RequestInit = {

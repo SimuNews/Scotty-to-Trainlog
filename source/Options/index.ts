@@ -10,6 +10,12 @@ function initOptions() {
         localStorage.setItem("options.converter.use-platform-specific-waypoints", String(platformSpecificHandlingCheckbox.checked));
     });
     platformSpecificHandlingCheckbox.checked = (localStorage.getItem("options.converter.use-platform-specific-waypoints") ?? "true") === "true";
+    // == Base URL ==
+    const baseUrlInput = document.getElementById("tlu-api-base-url") as HTMLInputElement;
+    baseUrlInput?.addEventListener("change", () => {
+        localStorage.setItem("options.api.base-url", baseUrlInput.value);
+    });
+    baseUrlInput.value = localStorage.getItem("options.api.base-url") || "";
 }
 
 initOptions();

@@ -10,6 +10,10 @@ namespace TLU {
         public static isUsePlatformSpecificWaypoints(): boolean {
             return (localStorage.getItem(Options.USE_PLATFORM_SPECIFIC_WAYPOINTS) ?? "true") === "true";
         }
+
+        public static getBaseUrl(): string | null {
+            return localStorage.getItem("options.api.base-url");
+        }
     }
 }
 

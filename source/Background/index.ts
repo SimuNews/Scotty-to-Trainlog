@@ -62,7 +62,7 @@ browser.runtime.onMessage.addListener(async (message: any) => {
             console.log(tripToSave);
 
             promises.push(
-                TLU.api("u/" + localStorage.getItem("username") + "/scottySaveTrip")
+                TLU.api("u/" + localStorage.getItem("username") + "/scottySaveTrip?overview=full")
                 .post(tripToSave)
             );
         }
