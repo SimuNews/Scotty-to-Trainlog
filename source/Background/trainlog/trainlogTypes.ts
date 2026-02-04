@@ -52,6 +52,8 @@ namespace TLU {
         destinationManualLng: string;
         operator: string;
         lineName: string;
+        detailsToggle: string;
+        visibility: string;
         material_type: string;
         reg: string;
         seat: string;
@@ -60,6 +62,7 @@ namespace TLU {
         currency: string;
         purchasing_date: string;
         ticket_id: string;
+        powerType: string;
         precision: string;
         onlyDate: string;
         manDurationHours: string;
@@ -74,6 +77,7 @@ namespace TLU {
         type: TrainlogTripType;
         trip_length: number;
         estimated_trip_duration: number;
+        details: any;
         waypoints: string;
     }
 

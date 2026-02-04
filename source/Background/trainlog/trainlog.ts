@@ -47,6 +47,8 @@ namespace TLU {
                 estimated_trip_duration: 0,
                 manDurationHours: "0",
                 manDurationMinutes: "0",
+                detailsToggle: "on",
+                visibility: "public",
                 material_type: "",
                 onlyDate: "",
                 onlyDateDuration: "",
@@ -56,7 +58,9 @@ namespace TLU {
                 reg: "",
                 seat: "",
                 ticket_id: "",
+                powerType: "auto",
                 trip_length: 0,
+                details: null,
                 waypoints: await JSON.stringify(waypoints)
             } as TLU.TrainLogNewTrip)
         }
