@@ -1,6 +1,6 @@
 {
   "name": "trainlog-utilities",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "Auto import trips to Trainlog",
   "private": true,
   "repository": "https://github.com/SimuNews/scotty-to-trainlog.git",
