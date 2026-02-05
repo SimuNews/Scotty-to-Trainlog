@@ -2,7 +2,7 @@ namespace TLU {
 
 	function getBaseUrl(): string {
 		const baseUrl = window.TLU?.Options?.getBaseUrl?.();
-		return baseUrl || "http://trainglog.me";
+		return baseUrl || "https://trainglog.me";
 	}
 
 	export function api(url: string, background: boolean = false): ApiUrl {
