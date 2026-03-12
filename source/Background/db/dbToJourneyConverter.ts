@@ -40,16 +40,19 @@ namespace DBAHN {
         }
 
         private convertToTrainStation(station: Halt): TLU.TrainStation {
-            const realTimeArrival = TLU.Options.isPreventRealtime() ? null : station.ezAnkunftsZeitpunkt;
-            const realTimeDeparture = TLU.Options.isPreventRealtime() ? null : station.ezAbfahrtsZeitpunkt;
-            const arrDateString = realTimeArrival ?? station.ankunftsZeitpunkt ?? "";
-            const depDateString = realTimeDeparture ?? station.abfahrtsZeitpunkt ?? "";
+            const realTimeArrival = station.ezAnkunftsZeitpunkt;
+            const realTimeDeparture = station.ezAbfahrtsZeitpunkt;
+            const arrDateString = station.ankunftsZeitpunkt;
+            const depDateString = station.abfahrtsZeitpunkt;
             return {
                 name: station.name,
                 location: this.convertIdToLocation(station.id),
                 platform: station.gleis,
-                arrDateTime: arrDateString ? new Date(arrDateString + "Z") : undefined,
-                depDateTime: depDateString ? new Date(depDateString + "Z") : undefined,
+                depDateTime: depDateString ? new Date(TLU.Options.isPreventRealtime() ? depDateString : realTimeDeparture || depDateString + "Z") : undefined,
+                arrDateTime: arrDateString ? new Date(TLU.Options.isPreventRealtime() ? arrDateString : realTimeArrival || arrDateString + "Z") : undefined,
+                // delay in seconds, calculated from the difference between real and scheduled times. If real times are not available, delay is set to 0.
+                depDelay: TLU.Options.isUseDelayFields() && realTimeDeparture && depDateString ? Math.round((new Date(realTimeDeparture + "Z").getTime() - new Date(depDateString + "Z").getTime()) / 1000) : 0,
+                arrDelay: TLU.Options.isUseDelayFields() && realTimeArrival && arrDateString ? Math.round((new Date(realTimeArrival + "Z").getTime() - new Date(arrDateString + "Z").getTime()) / 1000) : 0,
             } as TLU.TrainStation;
         }
 

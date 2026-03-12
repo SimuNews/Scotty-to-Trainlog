@@ -48,12 +48,16 @@ browser.runtime.onMessage.addListener(async (message: any) => {
 
             // let realOperators: string[] = [];
             let operator: string = "";
-            if (convertedJourney.legs[i].operator?.startsWith("WESTBahn")) {
+            if (convertedJourney.legs[i].operator?.startsWith("WEST")) {
                 operator = "Westbahn";
             } else if (convertedJourney.legs[i].operator.startsWith("Nah")) {
                 operator = "ÖBB";
             } else if (convertedJourney.legs[i].operator.includes("Postbus")) {
                 operator = "Postbus";
+            } else if (convertedJourney.legs[i].operator.startsWith("Albus Salzburg")) {
+                operator = "Albus";
+            } else if (convertedJourney.legs[i].operator === "Salzburg AG - O-Bus") {
+                operator = "Salzburg AG";
             } else {
                 operator = convertedJourney.legs[i].operator;
             }

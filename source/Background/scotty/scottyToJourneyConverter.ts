@@ -17,8 +17,8 @@ namespace SCOTTY {
             const con = this.connections[conId];
             return {
                 legs: this.connectionToLegs(con),
-                depDateTime: this.formatDate(con.date, con.dep.dTimeR, con.dep.dTimeS, con.dep.dTZOffset),
-                arrDateTime: this.formatDate(con.date, con.arr.aTimeR, con.arr.aTimeS, con.arr.aTZOffset)
+                depDateTime: this.formatDate(con.date, con.dep.dTimeR, con.dep.dTimeS, con.dep.dTZOffset, TLU.Options.isPreventRealtime()),
+                arrDateTime: this.formatDate(con.date, con.arr.aTimeR, con.arr.aTimeS, con.arr.aTZOffset, TLU.Options.isPreventRealtime())
             } as TLU.Journey;
         }
 
@@ -51,12 +51,19 @@ namespace SCOTTY {
 
             for (const stop of jny.stopL) {
                 const loc = this.locations[stop.locX];
+                const scheduledDepDateTime = this.formatDate(jny.date, stop.dTimeR, stop.dTimeS, stop.dTZOffset, true);
+                const scheduledArrDateTime = this.formatDate(jny.date, stop.aTimeR, stop.aTimeS, stop.aTZOffset, true);
+                const realDepDateTime = this.formatDate(jny.date, stop.dTimeR, stop.dTimeS, stop.dTZOffset, false);
+                const realArrDateTime = this.formatDate(jny.date, stop.aTimeR, stop.aTimeS, stop.aTZOffset, false);
                 stations.push({
                     name: loc.name,
                     location: this.crdToLocation(loc.crd),
                     platform: this.stopToPlatform(stop),
-                    depDateTime: this.formatDate(jny.date, stop.dTimeR, stop.dTimeS, stop.dTZOffset),
-                    arrDateTime: this.formatDate(jny.date, stop.aTimeR, stop.aTimeS, stop.aTZOffset)
+                    depDateTime: TLU.Options.isPreventRealtime() ? scheduledDepDateTime : realDepDateTime ?? scheduledDepDateTime,
+                    arrDateTime: TLU.Options.isPreventRealtime() ? scheduledArrDateTime : realArrDateTime ?? scheduledArrDateTime,
+                    // Delay in seconds, calculated from the difference between real and scheduled times. If real times are not available, delay is set to 0.
+                    depDelay: TLU.Options.isUseDelayFields() && realDepDateTime && scheduledDepDateTime ? Math.round((realDepDateTime.getTime() - scheduledDepDateTime.getTime()) / 1000) : 0,
+                    arrDelay: TLU.Options.isUseDelayFields() && realArrDateTime && scheduledArrDateTime ? Math.round((realArrDateTime.getTime() - scheduledArrDateTime.getTime()) / 1000) : 0,
                 });
             }
 
@@ -78,8 +85,8 @@ namespace SCOTTY {
             return departurePlatform ? departurePlatform : arrivalPlatform ? arrivalPlatform : "";
         }
 
-        private formatDate(date: string, realTime?: string, scheduledTime?: string, offset?: number): Date | undefined {
-            const time = TLU.Options.isPreventRealtime() ? scheduledTime : realTime ?? scheduledTime;
+        private formatDate(date: string, realTime?: string, scheduledTime?: string, offset?: number, preventRealtime?: boolean): Date | undefined {
+            const time = preventRealtime ? scheduledTime : realTime ?? scheduledTime;
             if (!time) {
                 return undefined;
             }

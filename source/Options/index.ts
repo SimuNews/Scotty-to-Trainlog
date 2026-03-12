@@ -3,7 +3,13 @@ function initOptions() {
     input?.addEventListener("change", () => {
         localStorage.setItem("options.converter.use-scheduled-data", String(input.checked));
     });
-    input.checked = (localStorage.getItem("options.converter.use-scheduled-data") ?? "true") === "true";
+    input.checked = (localStorage.getItem("options.converter.use-scheduled-data") ?? "false") === "true";
+    // == Use delay fields ==
+    const useDelayFieldsCheckbox = document.getElementById("tlu-use-delay-fields") as HTMLInputElement;
+    useDelayFieldsCheckbox?.addEventListener("change", () => {
+        localStorage.setItem("options.converter.use-delay-fields", String(useDelayFieldsCheckbox.checked));
+    });
+    useDelayFieldsCheckbox.checked = (localStorage.getItem("options.converter.use-delay-fields") ?? "true") === "true";
     // == Use platform specific waypoints ==
     const platformSpecificHandlingCheckbox = document.getElementById("tlu-use-platform-specific-waypoints") as HTMLInputElement;
     platformSpecificHandlingCheckbox?.addEventListener("change", () => {

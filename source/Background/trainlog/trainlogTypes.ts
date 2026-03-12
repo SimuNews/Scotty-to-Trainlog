@@ -74,6 +74,10 @@ namespace TLU {
         onlyDateDuration: string;
         newTripEnd: string;
         newTripStart: string;
+        // In seconds
+        departure_delay: number;
+        // In seconds
+        arrival_delay: number;
         type: TrainlogTripType;
         trip_length: number;
         estimated_trip_duration: number;

@@ -37,6 +37,8 @@ namespace TLU {
                 newTripEndDate: window.TLU.formatDateJson(jny.legs[i].stations[jny.legs[i].stations.length - 1].arrDateTime),
                 newTripEndTime: window.TLU.formatTime(jny.legs[i].stations[jny.legs[i].stations.length - 1].arrDateTime),
                 newTripEnd: window.TLU.formatDateTime(jny.legs[i].stations[jny.legs[i].stations.length - 1].arrDateTime),
+                departure_delay: jny.legs[i].stations[0].depDelay ?? 0,
+                arrival_delay: jny.legs[i].stations[jny.legs[i].stations.length - 1].arrDelay ?? 0,
                 type: jny.legs[i].type,
                 price: "",
                 purchasing_date: window.TLU.formatDateJson(jny.depDateTime),
