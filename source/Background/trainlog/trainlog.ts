@@ -13,11 +13,14 @@ namespace TLU {
 
     export async function buildTrip(jny: TLU.Journey, i: number, operator: string) {
         const waypoints: TLU.Location[] = [];
+        const getBestPossibleLocationPromises: Promise<TLU.Location>[] = [];
         for (let index = 1; index < jny.legs[i].stations.length - 2; index++) {
             const s = jny.legs[i].stations[index];
             console.log("Station: " + s.name);
-            waypoints.push(await getBestPossibleLocation(s.location, s.platform))
+            getBestPossibleLocationPromises.push(getBestPossibleLocation(s.location, s.platform));
         }
+
+        waypoints.push(...await Promise.all(getBestPossibleLocationPromises));
         
         const originLocation = await getBestPossibleLocation(jny.legs[i].stations[0]?.location, jny.legs[i].stations[0]?.platform);
         const destinationLocation = await getBestPossibleLocation(jny.legs[i].stations[jny.legs[i].stations.length - 1]?.location, jny.legs[i].stations[jny.legs[i].stations.length - 1]?.platform);
