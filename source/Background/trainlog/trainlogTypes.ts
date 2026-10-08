@@ -15,6 +15,31 @@ namespace TLU {
         lng: number;
     }
 
+    export interface WaypointStop {
+        name: string;
+        cc?: string;
+        platform: string;
+        arr?: Date;
+        dep?: Date;
+        arr_rt?: Date;
+        dep_rt?: Date;
+        tz?: string;
+        lat: number;
+        lng: number;
+        id?: string;
+        trip?: string;
+    }
+
+    export interface Waypoint {
+        lat: number;
+        lng: number;
+        name: string;
+        stop: WaypointStop;
+    }
+
+    // [[lat, lng], name, stop]
+    export type ViaStation = [number[], string, WaypointStop];
+
     export interface Journey {
         legs: Leg[];
         depDateTime: Date;
@@ -78,6 +103,9 @@ namespace TLU {
         departure_delay: number;
         // In seconds
         arrival_delay: number;
+        departurePlatform: string;
+        arrivalPlatform: string;
+        viaStations: ViaStation[];
         type: TrainlogTripType;
         trip_length: number;
         estimated_trip_duration: number;

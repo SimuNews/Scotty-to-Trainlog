@@ -11,22 +11,43 @@ namespace TLU {
         return [loc.lat, loc.lng];
     }
 
-    export async function buildTrip(jny: TLU.Journey, i: number, operator: string) {
-        const waypoints: TLU.Location[] = [];
-        const getBestPossibleLocationPromises: Promise<TLU.Location>[] = [];
-        for (let index = 1; index < jny.legs[i].stations.length - 2; index++) {
-            const s = jny.legs[i].stations[index];
-            console.log("Station: " + s.name);
-            getBestPossibleLocationPromises.push(getBestPossibleLocation(s.location, s.platform));
+    function addSeconds(date?: Date, seconds?: number): Date | undefined {
+        if (!date) {
+            return undefined;
         }
+        return new Date(date.getTime() + (seconds ?? 0) * 1000);
+    }
 
-        waypoints.push(...await Promise.all(getBestPossibleLocationPromises));
-        
+    async function stationToWaypoint(s: TLU.TrainStation): Promise<TLU.Waypoint> {
+        const loc = await getBestPossibleLocation(s.location, s.platform);
+        return {
+            lat: loc.lat,
+            lng: loc.lng,
+            name: s.name,
+            stop: {
+                name: s.name,
+                platform: s.platform ?? "",
+                // arr/dep are scheduled times when delay fields are used (delay in seconds), otherwise already realtime with delay 0
+                arr: s.arrDateTime,
+                dep: s.depDateTime,
+                arr_rt: addSeconds(s.arrDateTime, s.arrDelay),
+                dep_rt: addSeconds(s.depDateTime, s.depDelay),
+                lat: s.location.lat,
+                lng: s.location.lng
+            }
+        };
+    }
+
+    export async function buildTrip(jny: TLU.Journey, i: number, operator: string) {
+        const stations = jny.legs[i].stations;
+        // Intermediate stops only, origin and destination are sent separately
+        const waypoints: TLU.Waypoint[] = await Promise.all(stations.slice(1, -1).map(stationToWaypoint));
+
         const originLocation = await getBestPossibleLocation(jny.legs[i].stations[0]?.location, jny.legs[i].stations[0]?.platform);
         const destinationLocation = await getBestPossibleLocation(jny.legs[i].stations[jny.legs[i].stations.length - 1]?.location, jny.legs[i].stations[jny.legs[i].stations.length - 1]?.platform);
         
         return {
-            jsonPath: JSON.stringify([originLocation, ...waypoints, destinationLocation]),
+            jsonPath: JSON.stringify([originLocation, ...waypoints.map(w => ({ lat: w.lat, lng: w.lng })), destinationLocation]),
             newTrip: JSON.stringify({
                 originStation: [locationToArray(originLocation), jny.legs[i].stations[0].name],
                 destinationStation: [locationToArray(destinationLocation), jny.legs[i].stations[jny.legs[i].stations.length - 1].name],
@@ -42,6 +63,9 @@ namespace TLU {
                 newTripEnd: window.TLU.formatDateTime(jny.legs[i].stations[jny.legs[i].stations.length - 1].arrDateTime),
                 departure_delay: jny.legs[i].stations[0].depDelay ?? 0,
                 arrival_delay: jny.legs[i].stations[jny.legs[i].stations.length - 1].arrDelay ?? 0,
+                departurePlatform: jny.legs[i].stations[0].platform ?? "",
+                arrivalPlatform: jny.legs[i].stations[jny.legs[i].stations.length - 1].platform ?? "",
+                viaStations: waypoints.map(w => [locationToArray(w), w.name, w.stop] as TLU.ViaStation),
                 type: jny.legs[i].type,
                 price: "",
                 purchasing_date: window.TLU.formatDateJson(jny.depDateTime),
